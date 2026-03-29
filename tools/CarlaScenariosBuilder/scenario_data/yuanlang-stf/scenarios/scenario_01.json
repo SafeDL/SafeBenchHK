@@ -1,0 +1,53 @@
+{
+  "available_scenarios": [
+    {
+      "yuanlang-stf": [
+        {
+          "available_event_configurations": [
+            {
+              "other_actors": {
+                "right": [
+                  {
+                    "pitch": "0.00",
+                    "x": "-392.98",
+                    "y": "-183.97",
+                    "yaw": "270.03",
+                    "z": "-4.00"
+                  }
+                ]
+              },
+              "transform": {
+                "pitch": "0.00",
+                "x": "-384.98",
+                "y": "-187.47",
+                "yaw": "90.03",
+                "z": "-4.00"
+              }
+            },
+            {
+              "other_actors": {
+                "left": [
+                  {
+                    "pitch": "0.00",
+                    "x": "-305.42",
+                    "y": "-181.48",
+                    "yaw": "90.65",
+                    "z": "-3.70"
+                  }
+                ]
+              },
+              "transform": {
+                "pitch": "0.00",
+                "x": "-297.46",
+                "y": "-177.89",
+                "yaw": "270.65",
+                "z": "-3.70"
+              }
+            }
+          ],
+          "scenario_name": "DynamicObjectCrossing"
+        }
+      ]
+    }
+  ]
+}

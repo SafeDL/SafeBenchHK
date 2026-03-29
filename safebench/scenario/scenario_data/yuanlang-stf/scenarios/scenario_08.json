@@ -1,0 +1,82 @@
+{
+  "available_scenarios": [
+    {
+      "yuanlang-stf": [
+        {
+          "available_event_configurations": [
+            {
+              "other_actors": {
+                "left": [
+                  {
+                    "pitch": "0.00",
+                    "x": "333.61",
+                    "y": "38.00",
+                    "yaw": "326.36",
+                    "z": "-5.60"
+                  }
+                ]
+              },
+              "transform": {
+                "pitch": "0.00",
+                "x": "336.28",
+                "y": "18.21",
+                "yaw": "235.35",
+                "z": "-5.70"
+              }
+            },
+            {
+              "other_actors": {
+                "right": [
+                  {
+                    "pitch": "0.00",
+                    "x": "34.06",
+                    "y": "116.64",
+                    "yaw": "1.35",
+                    "z": "-5.80"
+                  }
+                ]
+              },
+              "transform": {
+                "pitch": "0.00",
+                "x": "52.89",
+                "y": "102.21",
+                "yaw": "91.14",
+                "z": "-5.90"
+              }
+            },
+            {
+              "other_actors": {
+                "left": [
+                  {
+                    "pitch": "0.00",
+                    "x": "-264.09",
+                    "y": "-19.23",
+                    "yaw": "270.25",
+                    "z": "-5.90"
+                  }
+                ],
+                "right": [
+                  {
+                    "pitch": "0.00",
+                    "x": "-262.60",
+                    "y": "9.03",
+                    "yaw": "1.19",
+                    "z": "-5.50"
+                  }
+                ]
+              },
+              "transform": {
+                "pitch": "-4.07",
+                "x": "-238.71",
+                "y": "-11.93",
+                "yaw": "271.74",
+                "z": "-5.75"
+              }
+            }
+          ],
+          "scenario_name": "NoSignalJunctionCrossingRoute"
+        }
+      ]
+    }
+  ]
+}

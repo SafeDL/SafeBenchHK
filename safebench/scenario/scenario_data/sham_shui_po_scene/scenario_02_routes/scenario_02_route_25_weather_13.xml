@@ -1,0 +1,11 @@
+<?xml version='1.0' encoding='utf-8'?>
+<routes>
+  <route id="25" town="sham_shui_po_scene">
+    <weather cloudiness="60.0" dust_storm="0.0" fog_density="3.0" fog_distance="0.75" fog_falloff="0.10000000149011612" mie_scattering_scale="0.029999999329447746" precipitation="60.0" precipitation_deposits="60.0" rayleigh_scattering_scale="0.03310000151395798" scattering_intensity="1.0" sun_altitude_angle="45.0" sun_azimuth_angle="-1.0" wetness="0.0" wind_intensity="60.0" />
+    <waypoint pitch="0.00" roll="0.00" x="-294.98" y="-122.97" yaw="-49.91" z="2.00" />
+    <waypoint pitch="0.00" roll="0.00" x="-274.50" y="-148.54" yaw="-72.09" z="2.00" />
+    <waypoint pitch="0.00" roll="0.00" x="-274.53" y="-155.51" yaw="-106.85" z="2.00" />
+    <waypoint pitch="0.00" roll="0.00" x="-275.10" y="-158.92" yaw="-140.37" z="2.00" />
+    <waypoint pitch="0.00" roll="0.00" x="-299.42" y="-179.58" yaw="-139.66" z="2.00" />
+  </route>
+</routes>

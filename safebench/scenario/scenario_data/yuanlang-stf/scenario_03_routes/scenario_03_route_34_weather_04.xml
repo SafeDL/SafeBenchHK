@@ -1,0 +1,8 @@
+<?xml version='1.0' encoding='utf-8'?>
+<routes>
+  <route id="34" town="yuanlang-stf">
+    <weather cloudiness="60.0" dust_storm="0.0" fog_density="3.0" fog_distance="0.75" fog_falloff="0.10000000149011612" mie_scattering_scale="0.029999999329447746" precipitation="0.0" precipitation_deposits="0.0" rayleigh_scattering_scale="0.03310000151395798" scattering_intensity="1.0" sun_altitude_angle="45.0" sun_azimuth_angle="-1.0" wetness="0.0" wind_intensity="10.0" />
+    <waypoint pitch="-0.83" roll="0.00" x="-581.73" y="-174.41" yaw="-203.45" z="-4.22" />
+    <waypoint pitch="0.10" roll="0.00" x="-931.29" y="34.10" yaw="148.79" z="-5.10" />
+  </route>
+</routes>

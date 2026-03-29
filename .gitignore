@@ -1,0 +1,38 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Model checkpoints (too large for GitHub)
+*.ckpt
+*.pth
+*.pt
+*.torch
+*.bin
+*.h5
+
+# Log and experiment data
+log/
+Bench2DriveZOO/
+tools/map_waypoints/
+tools/scenario_data/
+tools/scenario_origin/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# CARLA
+*.mp4
