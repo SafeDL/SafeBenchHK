@@ -5,14 +5,15 @@
 """
 import numpy as np
 from safebench.scenario.tools.route_manipulation import interpolate_trajectory
+from safebench.carla_agents.navigation.global_route_planner import GlobalRoutePlanner
 
 
-def calculate_interpolate_trajectory(config, world):
+def calculate_interpolate_trajectory(config, world, grp=None):
     # get route
     origin_waypoints_loc = []
     for loc in config.trajectory:
         origin_waypoints_loc.append(loc)
-    route = interpolate_trajectory(world, origin_waypoints_loc, 2.0)
+    route = interpolate_trajectory(world, origin_waypoints_loc, 2.0, grp=grp)
 
     # get [x, y] along the route
     waypoint_xy = []
@@ -49,9 +50,10 @@ class ScenarioDataLoader:
 
         # If using CARLA maps, manually check overlaps
         if 'safebench' not in self.town:
+            grp = GlobalRoutePlanner(world.get_map(), 2.0)
             for config in config_lists:
                 print(f"processing test route {config.route_id}...")
-                self.routes.append(calculate_interpolate_trajectory(config, world))
+                self.routes.append(calculate_interpolate_trajectory(config, world, grp=grp))
 
         # 在当前城镇下,一共设计了多少个测试场景
         self.num_total_scenario = len(config_lists)

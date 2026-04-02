@@ -17,7 +17,7 @@ from safebench.carla_runner import CarlaRunner
 if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument('--exp_name', type=str, default='scenario_04_results')
+    parser.add_argument('--exp_name', type=str, default='scenario_03_results')
 
     # 定义测试结果的输出目录
     parser.add_argument('--output_dir', type=str, default='log')
@@ -28,7 +28,7 @@ if __name__ == '__main__':
 
     # 提供三种模式选择：训练agent、训练scenario、evaluation
     parser.add_argument('--mode', '-m', type=str, default='eval', choices=['train_agent', 'train_scenario', 'eval'])
-    parser.add_argument('--agent_cfg', nargs='+', type=str, default=['tcp.yaml'])
+    parser.add_argument('--agent_cfg', nargs='+', type=str, default=['behavior.yaml'])
     parser.add_argument('--scenario_cfg', nargs='+', type=str, default=['standard.yaml'])
     parser.add_argument('--continue_agent_training', '-cat', type=bool, default=False)
     parser.add_argument('--continue_scenario_training', '-cst', type=bool, default=False)
@@ -41,7 +41,7 @@ if __name__ == '__main__':
     parser.add_argument('--save_video', type=bool, default=True)
     parser.add_argument('--render', type=bool, default=False)
 
-    # 每间隔多少帧再计算一次，数值太大会导致计算不及时，一直使用之前计算得到的数据进行控制
+    # 每间隔多少帧再计算一次，数值太大会导致计算不及时，一直使用之前t计算得到的数据进行控制
     parser.add_argument('--frame_skip', '-fs', type=int, default=1, help='skip of frame in each step')
     parser.add_argument('--port', type=int, default=2000, help='port to communicate with carla')
     parser.add_argument('--tm_port', type=int, default=8000, help='traffic manager port')

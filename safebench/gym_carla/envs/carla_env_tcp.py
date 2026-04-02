@@ -29,6 +29,7 @@ from safebench.scenario.scenario_manager.scenario_manager import ScenarioManager
 from safebench.scenario.tools.route_manipulation import interpolate_trajectory
 from safebench.scenario.scenario_definition.atomic_criteria import Status
 from safebench.scenario.scenario_manager.carla_data_provider import CarlaDataProvider
+from safebench.carla_agents.navigation.global_route_planner import GlobalRoutePlanner
 
 
 class CarlaEnvTCP(gym.Env):
@@ -51,6 +52,9 @@ class CarlaEnvTCP(gym.Env):
         self.env_id = None
         self.ego_vehicle = None
         self.auto_ego = env_params['auto_ego']
+
+        # 缓存 GlobalRoutePlanner 实例，避免重复创建导致图拓扑不一致
+        self._grp = GlobalRoutePlanner(world.get_map(), 2.0)
 
         self.collision_sensor = None
         self.lidar_sensor = None
@@ -168,7 +172,7 @@ class CarlaEnvTCP(gym.Env):
         self.scenario_manager.run_scenario(scenario_init_action)
 
     def _parse_route(self, config):
-        route = interpolate_trajectory(self.world, config.trajectory)
+        route = interpolate_trajectory(self.world, config.trajectory, grp=self._grp)
         waypoints_list = []
         carla_map = self.world.get_map()
         for node in route:
@@ -178,7 +182,7 @@ class CarlaEnvTCP(gym.Env):
         return waypoints_list
 
     def get_static_obs(self, config):
-        route = interpolate_trajectory(self.world, config.trajectory, 5.0)
+        route = interpolate_trajectory(self.world, config.trajectory, grp=self._grp)
 
         waypoint_xy = []
         for transform_tuple in route:

@@ -64,6 +64,9 @@ class CarlaEnvModel(gym.Env):
         self.ego_vehicle = None
         self.auto_ego = env_params['auto_ego']
 
+        # 缓存 GlobalRoutePlanner 实例，避免重复创建导致图拓扑不一致
+        self._grp = GlobalRoutePlanner(wmap=world.get_map(), sampling_resolution=2.0)
+
         # 传感器对象初始化
         self.collision_sensor = None
         self.lidar_sensor = None
@@ -198,11 +201,9 @@ class CarlaEnvModel(gym.Env):
 
     # ======================== 【通用逻辑】路径解析 ========================
     def _parse_route(self, config):
-        wmap = self.world.get_map()
-        global_planner = GlobalRoutePlanner(wmap, sampling_resolution=2.0)
         start_location = config.trajectory[0]
         end_location = config.trajectory[-1]
-        route = global_planner.trace_route(start_location, end_location)
+        route = self._grp.trace_route(start_location, end_location)
 
         waypoints_list = []
         for transform_tuple in route:
@@ -211,11 +212,9 @@ class CarlaEnvModel(gym.Env):
 
     # ======================== 【通用逻辑】静态观测获取 ========================
     def get_static_obs(self, config):
-        wmap = self.world.get_map()
-        global_planner = GlobalRoutePlanner(wmap, sampling_resolution=5.0)
         start_location = config.trajectory[0]
         end_location = config.trajectory[-1]
-        route = global_planner.trace_route(start_location, end_location)
+        route = self._grp.trace_route(start_location, end_location)
 
         waypoint_xy = []
         for transform_tuple in route:

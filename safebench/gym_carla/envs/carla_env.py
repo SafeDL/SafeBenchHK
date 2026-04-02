@@ -70,6 +70,9 @@ class CarlaEnv(gym.Env):
         self.ego_vehicle = None
         self.auto_ego = env_params['auto_ego']
 
+        # 缓存 GlobalRoutePlanner 实例，避免重复创建导致图拓扑不一致
+        self._grp = GlobalRoutePlanner(wmap=world.get_map(), sampling_resolution=2.0)
+
         self.collision_sensor = None
         self.lidar_sensor = None
         self.camera_sensor = None
@@ -183,11 +186,9 @@ class CarlaEnv(gym.Env):
 
     def _parse_route(self, config):
         # 20250730修改：使用carla自带的路径搜索功能,直接获取路由点
-        wmap = self.world.get_map()
-        global_planner = GlobalRoutePlanner(wmap, sampling_resolution=2.0)
         start_location = config.trajectory[0]
         end_location = config.trajectory[-1]
-        route = global_planner.trace_route(start_location, end_location)
+        route = self._grp.trace_route(start_location, end_location)
         # 遍历route中的每个transform_tuple,提取waypoint构成waypoint_list
         waypoints_list = []
         for transform_tuple in route:
@@ -199,11 +200,9 @@ class CarlaEnv(gym.Env):
         """
             This function returns static observation used for static scenario generation
         """
-        wmap = self.world.get_map()
-        global_planner = GlobalRoutePlanner(wmap, sampling_resolution=5.0)
         start_location = config.trajectory[0]
         end_location = config.trajectory[-1]
-        route = global_planner.trace_route(start_location, end_location)
+        route = self._grp.trace_route(start_location, end_location)
 
         # get [x, y] along the route
         waypoint_xy = []

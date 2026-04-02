@@ -8,16 +8,18 @@ matplotlib.use('TkAgg')
 from safebench.carla_agents.navigation.global_route_planner import GlobalRoutePlanner
 
 
-def interpolate_trajectory(world, waypoints_trajectory, hop_resolution=1.0):
+def interpolate_trajectory(world, waypoints_trajectory, hop_resolution=1.0, grp=None):
     """
         Given some raw keypoints interpolate a full dense trajectory to be used by the user.
             :param world: an reference to the CARLA world so we can use the planner
             :param waypoints_trajectory: the current coarse trajectory
             :param hop_resolution: is the resolution, how dense is the provided trajectory going to be made
+            :param grp: optional pre-built GlobalRoutePlanner instance to reuse
             :return: the full interpolated route both in GPS coordinates and also in its original form.
     """
 
-    grp = GlobalRoutePlanner(world.get_map(), hop_resolution)
+    if grp is None:
+        grp = GlobalRoutePlanner(world.get_map(), hop_resolution)
     route = []
 
     if len(waypoints_trajectory) == 1:
