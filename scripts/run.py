@@ -7,7 +7,6 @@
 import traceback
 import os.path as osp
 import time
-import os
 import torch
 from safebench.util.run_util import load_config
 from safebench.util.torch_util import set_seed, set_torch_variable
@@ -17,7 +16,7 @@ from safebench.carla_runner import CarlaRunner
 if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument('--exp_name', type=str, default='scenario_03_results')
+    parser.add_argument('--exp_name', type=str, default='scenario_01_results')
 
     # 定义测试结果的输出目录
     parser.add_argument('--output_dir', type=str, default='log')
@@ -28,7 +27,7 @@ if __name__ == '__main__':
 
     # 提供三种模式选择：训练agent、训练scenario、evaluation
     parser.add_argument('--mode', '-m', type=str, default='eval', choices=['train_agent', 'train_scenario', 'eval'])
-    parser.add_argument('--agent_cfg', nargs='+', type=str, default=['behavior.yaml'])
+    parser.add_argument('--agent_cfg', nargs='+', type=str, default=['tcp.yaml'])
     parser.add_argument('--scenario_cfg', nargs='+', type=str, default=['standard.yaml'])
     parser.add_argument('--continue_agent_training', '-cat', type=bool, default=False)
     parser.add_argument('--continue_scenario_training', '-cst', type=bool, default=False)
@@ -83,13 +82,6 @@ if __name__ == '__main__':
             runner.close()
             end_time = time.time()
             print(f"Total time for {agent_cfg} and {scenario_cfg}: {end_time - start_time} seconds")
-
-
-    # 运行完毕关闭CARLA
-    # os.system('pkill -f "CarlaUE4"')
-
-    # 删除log文件下的所有内容
-    # os.system('rm -r ../log/*')
 
     for err in err_list:
         print(err[0], err[1], 'failed!')

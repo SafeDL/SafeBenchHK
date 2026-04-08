@@ -318,6 +318,9 @@ class CollisionTest(Criterion):
             return
 
         actor_location = CarlaDataProvider.get_location(self.actor)
+        # Actor may have been destroyed or not yet registered; ignore the event
+        if actor_location is None:
+            return
 
         # 1. 忽略同ID的重复碰撞
         if self.last_id == event.other_actor.id:

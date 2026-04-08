@@ -53,7 +53,11 @@ class OtherLeadingVehicle(BasicScenario):
             self.actor_transform_list = [first_vehicle_transform]
             self.actor_speed_list = [10]  # m/s
         self.other_actors = self.scenario_operation.initialize_vehicle_actors(self.actor_transform_list, self.actor_type_list)
-        if len(self.other_actors) > 0:
+        # Trim transform/speed lists to match actually-spawned actors (some may have failed to spawn)
+        n_spawned = len(self.other_actors)
+        self.actor_transform_list = self.actor_transform_list[:n_spawned]
+        self.actor_speed_list = self.actor_speed_list[:n_spawned]
+        if n_spawned > 0:
             self.reference_actor = self.other_actors[0]
 
     def create_behavior(self, scenario_init_action):
@@ -61,6 +65,9 @@ class OtherLeadingVehicle(BasicScenario):
 
     def update_behavior(self, scenario_action):
         assert scenario_action is None, f'{self.name} should receive [None] action. A wrong scenario policy is used.'
+        if len(self.other_actors) == 0:
+            # No actors were successfully spawned; skip behavior update
+            return
         cur_distance = calculate_distance_transforms(self.actor_transform_list[0], CarlaDataProvider.get_transform(self.other_actors[0]))
         if cur_distance > self.dece_distance:
             self.need_decelerate = True
