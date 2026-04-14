@@ -1,8 +1,0 @@
-<?xml version='1.0' encoding='utf-8'?>
-<routes>
-  <route id="37" town="1201-ShaTin12D">
-    <weather cloudiness="-1.0" dust_storm="0.0" fog_density="-1.0" fog_distance="-1.0" fog_falloff="-1.0" mie_scattering_scale="0.029999999329447746" precipitation="-1.0" precipitation_deposits="-1.0" rayleigh_scattering_scale="0.03310000151395798" scattering_intensity="1.0" sun_altitude_angle="-1.0" sun_azimuth_angle="-1.0" wetness="-1.0" wind_intensity="-1.0" />
-    <waypoint pitch="1.71" roll="0.00" x="-240.12" y="164.93" yaw="59.82" z="-19.62" />
-    <waypoint pitch="7.89" roll="0.00" x="-170.84" y="295.81" yaw="61.66" z="-4.23" />
-  </route>
-</routes>
