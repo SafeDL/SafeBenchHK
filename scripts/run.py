@@ -16,7 +16,7 @@ from safebench.carla_runner import CarlaRunner
 if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument('--exp_name', type=str, default='scenario_07_results')
+    parser.add_argument('--exp_name', type=str, default='scenario_01_results')
 
     # 定义测试结果的输出目录
     parser.add_argument('--output_dir', type=str, default='log')
@@ -27,7 +27,7 @@ if __name__ == '__main__':
 
     # 提供三种模式选择：训练agent、训练scenario、evaluation
     parser.add_argument('--mode', '-m', type=str, default='eval', choices=['train_agent', 'train_scenario', 'eval'])
-    parser.add_argument('--agent_cfg', nargs='+', type=str, default=['tcp.yaml'])
+    parser.add_argument('--agent_cfg', nargs='+', type=str, default=['behavior.yaml'])
     parser.add_argument('--scenario_cfg', nargs='+', type=str, default=['standard.yaml'])
     parser.add_argument('--continue_agent_training', '-cat', type=bool, default=False)
     parser.add_argument('--continue_scenario_training', '-cst', type=bool, default=False)
