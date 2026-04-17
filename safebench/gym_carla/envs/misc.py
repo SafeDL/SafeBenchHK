@@ -146,10 +146,10 @@ def get_preview_lane_dis(waypoints, x, y, idx=2):
         :return: a tuple of the distance and the waypoint orientation
     """
     waypt = waypoints[idx]
-    vec = np.array([x - waypt[0], y - waypt[1]])
-    lv = np.linalg.norm(np.array(vec))
-    w = np.array([np.cos(waypt[2]/180*np.pi), np.sin(waypt[2]/180*np.pi)])
-    cross = np.cross(w, vec/lv)
+    vec = np.array([x - waypt[0], y - waypt[1], 0.0])
+    lv = np.linalg.norm(vec)
+    w = np.array([np.cos(waypt[2]/180*np.pi), np.sin(waypt[2]/180*np.pi), 0.0])
+    cross = np.cross(w, vec/lv)[2]
     dis = - lv * cross
     return dis, w
 

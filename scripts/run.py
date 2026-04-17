@@ -16,7 +16,7 @@ from safebench.carla_runner import CarlaRunner
 if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument('--exp_name', type=str, default='scenario_01_results')
+    parser.add_argument('--exp_name', type=str, default='scenario_03_results')
 
     # 定义测试结果的输出目录
     parser.add_argument('--output_dir', type=str, default='log')

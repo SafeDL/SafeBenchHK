@@ -62,7 +62,13 @@ class RouteParser(object):
                     initial_pose = carla.Transform(carla.Location(x, y, z), carla.Rotation(roll=roll, pitch=pitch, yaw=yaw))
                     new_config.initial_transform = initial_pose
                     new_config.initial_pose = initial_pose
-                waypoint_list.append(carla.Location(x=float(waypoint.attrib['x']), y=float(waypoint.attrib['y']), z=float(waypoint.attrib['z'])))
+                # 使用 z=0 而非 xml_z（xml_z = npy_z+2，约为 9m）。
+                # wmap.get_waypoint() 支持水平投影，z=0 能确保总是 snap 到地面道路层，
+                # 避免在高架/隧道等多层结构中因 z 值过高而 snap 到错误路段节点，
+                # 造成 GRP 路径规划失败（NetworkXNoPath）。
+                # 这也与 create_routes.py check_routes_is_possible 使用 npy_z（≈7m）
+                # 验证路线的行为语义一致。
+                waypoint_list.append(carla.Location(x=float(waypoint.attrib['x']), y=float(waypoint.attrib['y']), z=0))
 
             new_config.trajectory = waypoint_list
             list_route_descriptions.append(new_config)

@@ -128,7 +128,7 @@ if __name__ == '__main__':
     # 指定行驶route和场景触发点位置的存储位置
     parser.add_argument('--save_dir', type=str, default="scenario_data/new_central")
     # 指定需要导出的场景ID,默认导出所有场景
-    parser.add_argument('--scenario', type=int, default=8)
+    parser.add_argument('--scenario', type=int, default=2)
     args = parser.parse_args()
 
     main(args)

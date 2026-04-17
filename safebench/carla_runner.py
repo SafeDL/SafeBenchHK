@@ -351,6 +351,16 @@ class CarlaRunner:
                 )
 
 
+            # Warm up the CARLA server in synchronous mode before building the
+            # GlobalRoutePlanner graph.  Switching to sync mode and immediately
+            # calling get_topology() can return an incomplete topology, causing
+            # nx.astar_path to raise NetworkXNoPath even for valid routes.
+            # A few ticks let the server settle before we read road topology.
+            WARMUP_TICKS = 5
+            self.logger.log(f">> Warming up CARLA server ({WARMUP_TICKS} ticks) before loading route topology...")
+            for _ in range(WARMUP_TICKS):
+                self.world.tick()
+
             # prepare data loader and buffer
             data_loader = ScenarioDataLoader(config_by_map[map], self.num_scenario, map, self.world)
 

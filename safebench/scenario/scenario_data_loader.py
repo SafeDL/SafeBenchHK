@@ -4,22 +4,28 @@
 3、场景数据加载器
 """
 import numpy as np
+import networkx as nx
 from safebench.scenario.tools.route_manipulation import interpolate_trajectory
 from safebench.carla_agents.navigation.global_route_planner import GlobalRoutePlanner
 
 
 def calculate_interpolate_trajectory(config, world, grp=None):
-    # get route
-    origin_waypoints_loc = []
-    for loc in config.trajectory:
-        origin_waypoints_loc.append(loc)
-    route = interpolate_trajectory(world, origin_waypoints_loc, 2.0, grp=grp)
+    """
+    计算插值轨迹。
 
-    # get [x, y] along the route
-    waypoint_xy = []
-    for transform_tuple in route:
-        waypoint_xy.append([transform_tuple[0].location.x, transform_tuple[0].location.y])
+    trajectory 中的 z 值由 route_parser.py 统一设置为 0，与
+    tools/create_routes.py 中 check_routes_is_possible 的验证行为保持一致。
+    若此处规划失败，说明该路线在创建阶段就未能通过验证，应在 tools/create_routes.py
+    中重新选点并重新导出。
+    """
+    if grp is None:
+        grp = GlobalRoutePlanner(world.get_map(), 2.0)
 
+    route = interpolate_trajectory(world, config.trajectory, 2.0, grp=grp)
+    waypoint_xy = [
+        [transform_tuple[0].location.x, transform_tuple[0].location.y]
+        for transform_tuple in route
+    ]
     return waypoint_xy
 
 
@@ -53,7 +59,14 @@ class ScenarioDataLoader:
             grp = GlobalRoutePlanner(world.get_map(), 2.0)
             for config in config_lists:
                 print(f"processing test route {config.route_id}...")
-                self.routes.append(calculate_interpolate_trajectory(config, world, grp=grp))
+                try:
+                    self.routes.append(calculate_interpolate_trajectory(config, world, grp=grp))
+                except nx.NetworkXNoPath as e:
+                    # 规划失败说明该路线本身存在问题（不在连通子图中），
+                    # 应在 tools/create_routes.py 中重新选点并重新导出。
+                    # 此处跳过并用空列表占位，保证索引与 config_lists 对齐。
+                    print(f"[警告] route_id={config.route_id} 路径规划失败，请重新选点: {e}")
+                    self.routes.append([])
 
         # 在当前城镇下,一共设计了多少个测试场景
         self.num_total_scenario = len(config_lists)
@@ -111,4 +124,3 @@ class ScenarioDataLoader:
         # 校验将要测试的场景数量不能超过设定的场景数量
         assert len(selected_scenario) <= self.num_scenario, f"number of scenarios is larger than {self.num_scenario}"
         return selected_scenario, len(selected_scenario)
-

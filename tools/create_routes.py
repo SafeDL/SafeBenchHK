@@ -184,7 +184,9 @@ def check_routes_is_possible(config):
             trajectory = np.load(route_path)
             for point in trajectory:
                 x, y, z = point[:3]  # 获取前三列的坐标
-                location = carla.Location(x=x, y=y, z=z)  # 创建 CARLA Location 对象
+                # 使用 z=0 与运行时 route_parser.py 的行为保持一致，
+                # 确保 wmap.get_waypoint() snap 到相同的地面道路节点
+                location = carla.Location(x=x, y=y, z=0)
                 waypoints_trajectory.append(location)
             waypoint_xy = calculate_interpolate_trajectory(waypoints_trajectory, world)
             if len(waypoint_xy) < 2:  # 如果生成的路点太少，认为不可行

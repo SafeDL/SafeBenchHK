@@ -448,8 +448,9 @@ class CarlaEnv(gym.Env):
         ego_y = ego_trans.location.y
         ego_yaw = ego_trans.rotation.yaw / 180 * np.pi
         lateral_dis, w = get_preview_lane_dis(self.waypoints, ego_x, ego_y)  # 车辆当前位置与规划轨迹中线之间的横向距离。这个值用于评估车辆是否偏离车道中心
-        yaw = np.array([np.cos(ego_yaw), np.sin(ego_yaw)])
-        delta_yaw = np.arcsin(np.cross(w, yaw)) # 表示车辆当前朝向与车道方向之间的偏差角度。这个值用于评估车辆是否偏离车道方向
+        yaw = np.array([np.cos(ego_yaw), np.sin(ego_yaw), 0.0])
+        w3d = np.array([w[0], w[1], 0.0])
+        delta_yaw = np.arcsin(np.cross(w3d, yaw)[2]) # 表示车辆当前朝向与车道方向之间的偏差角度。这个值用于评估车辆是否偏离车道方向
 
         v = self.ego_vehicle.get_velocity()  # m/s
         speed = np.sqrt(v.x**2 + v.y**2) # 表示车辆的当前速度。这个值用于评估车辆的行驶速度

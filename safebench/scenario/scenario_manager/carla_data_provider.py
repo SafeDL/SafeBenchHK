@@ -737,8 +737,9 @@ class CarlaDataProvider(object):
             Remove an actor from the pool using its ID
         """
         if actor_id in CarlaDataProvider._carla_actor_pool:
-            CarlaDataProvider._carla_actor_pool[actor_id].destroy()
-            CarlaDataProvider._carla_actor_pool[actor_id] = None
+            actor = CarlaDataProvider._carla_actor_pool[actor_id]
+            if actor is not None and actor.is_alive:
+                actor.destroy()
             CarlaDataProvider._carla_actor_pool.pop(actor_id)
         else:
             print("Trying to remove a non-existing actor id {}".format(actor_id))
