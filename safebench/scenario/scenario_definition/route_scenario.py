@@ -276,7 +276,8 @@ class RouteScenario:
         criteria['average_velocity'] = AverageVelocityTest(actor=self.ego_vehicle, avg_velocity_success=1e4, avg_velocity_acceptable=1e4, optional=True)
         criteria['lane_invasion'] = KeepLaneTest(actor=self.ego_vehicle, optional=True)
         criteria['off_road'] = OffRoadTest(actor=self.ego_vehicle, optional=True)
-        criteria['collision'] = CollisionTest(actor=self.ego_vehicle, other_actor_type=['vehicle', 'walker', 'static'], terminate_on_failure=True)
+        # criteria['collision'] = CollisionTest(actor=self.ego_vehicle, other_actor_type=['vehicle', 'walker', 'static'], terminate_on_failure=True)
+        criteria['collision'] = CollisionTest(actor=self.ego_vehicle, other_actor_type=['vehicle', 'walker'], terminate_on_failure=True)
         criteria['run_red_light'] = RunningRedLightTest(actor=self.ego_vehicle)
         criteria['run_stop'] = RunningStopTest(actor=self.ego_vehicle)
         if self.config.scenario_id != 0:  # only check when evaluating

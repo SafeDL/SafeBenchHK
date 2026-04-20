@@ -345,6 +345,9 @@ class CollisionTest(Criterion):
                 # 如果遍历完列表发现没有一个关键词匹配，则忽略该碰撞
                 if not is_match:
                     return
+                # Filter out road and sidewalk to prevent false positives when 'static' is matched
+                if 'road' in target_type_id or 'sidewalk' in target_type_id:
+                    return
 
             # --- 分支 B: 特殊处理 miscellaneous ---
             elif self.other_actor_type == "miscellaneous":
@@ -372,6 +375,8 @@ class CollisionTest(Criterion):
             actor_type = TrafficEventType.COLLISION_PEDESTRIAN
         else:
             # 如果指定了检测 static，则标记为静态碰撞；否则默认忽略
+            if 'road' in event.other_actor.type_id or 'sidewalk' in event.other_actor.type_id:
+                return  # 路面或人行道接触不计入碰撞
             if self.other_actor_type and (
                     'static' in str(self.other_actor_type) or 'miscellaneous' in str(self.other_actor_type)):
                 actor_type = TrafficEventType.COLLISION_STATIC
