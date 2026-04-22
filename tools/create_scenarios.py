@@ -299,7 +299,7 @@ def main(config):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--map', type=str, default='center')
-    parser.add_argument('--scenario', type=int, default=8)
+    parser.add_argument('--scenario', type=int, default=1)
     args = parser.parse_args()
     main(args)
 

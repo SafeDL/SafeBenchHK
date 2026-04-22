@@ -2,7 +2,7 @@
 <routes>
   <route id="52" town="center">
     <weather cloudiness="5.0" dust_storm="0.0" fog_density="60.0" fog_distance="75.0" fog_falloff="1.0" mie_scattering_scale="0.029999999329447746" precipitation="0.0" precipitation_deposits="50.0" rayleigh_scattering_scale="0.03310000151395798" scattering_intensity="1.0" sun_altitude_angle="-90.0" sun_azimuth_angle="-1.0" wetness="60.0" wind_intensity="10.0" />
-    <waypoint pitch="0.00" roll="0.00" x="-116.25" y="-89.70" yaw="-166.12" z="7.60" />
-    <waypoint pitch="0.00" roll="0.00" x="-163.97" y="-102.11" yaw="-165.30" z="7.60" />
+    <waypoint pitch="0.00" roll="0.00" x="209.60" y="131.16" yaw="-255.94" z="8.00" />
+    <waypoint pitch="-4.26" roll="0.00" x="196.86" y="182.73" yaw="108.34" z="7.81" />
   </route>
 </routes>

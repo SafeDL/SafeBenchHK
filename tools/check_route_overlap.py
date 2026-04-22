@@ -405,7 +405,7 @@ if __name__ == '__main__':
     )
     parser.add_argument('--map',      type=str, default='center',
                         help='CARLA 地图名称（需与 CARLA 服务器一致）')
-    parser.add_argument('--scenario', type=int, default=8,
+    parser.add_argument('--scenario', type=int, default=1,
                         help='场景编号（如 1 对应 scenario_01）')
     parser.add_argument('--origin_dir', type=str, default='scenario_origin/center',
                         help='新路线 npy 文件的根目录（含 scenario_XX_routes 子目录）')

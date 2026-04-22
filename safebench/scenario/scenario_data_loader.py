@@ -5,7 +5,7 @@
 """
 import numpy as np
 import networkx as nx
-from safebench.scenario.tools.route_manipulation import interpolate_trajectory
+from safebench.scenario.tools.route_manipulation import interpolate_trajectory, RouteInterpolationError
 from safebench.carla_agents.navigation.global_route_planner import GlobalRoutePlanner
 
 
@@ -57,16 +57,18 @@ class ScenarioDataLoader:
         # If using CARLA maps, manually check overlaps
         if 'safebench' not in self.town:
             grp = GlobalRoutePlanner(world.get_map(), 2.0)
+            failed_routes = []
             for config in config_lists:
-                print(f"processing test route {config.route_id}...")
                 try:
                     self.routes.append(calculate_interpolate_trajectory(config, world, grp=grp))
-                except nx.NetworkXNoPath as e:
-                    # 规划失败说明该路线本身存在问题（不在连通子图中），
-                    # 应在 tools/create_routes.py 中重新选点并重新导出。
-                    # 此处跳过并用空列表占位，保证索引与 config_lists 对齐。
-                    print(f"[警告] route_id={config.route_id} 路径规划失败，请重新选点: {e}")
+                except RouteInterpolationError as e:
+                    failed_routes.append(config.route_id)
                     self.routes.append([])
+            if failed_routes:
+                unique_failed_routes = sorted(set(failed_routes))
+                print(f"[跳过] 以下 {len(unique_failed_routes)} 条测试路线路径规划失败:")
+                for route_id in unique_failed_routes:
+                    print(f"  - route_{route_id}")
 
         # 在当前城镇下,一共设计了多少个测试场景
         self.num_total_scenario = len(config_lists)

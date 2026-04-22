@@ -128,12 +128,12 @@ def get_lane_dis(waypoints, x, y):
         if d < dis_min:
             dis_min = d
             waypt = pt
-    vec = np.array([x - waypt[0], y - waypt[1]])
-    lv = np.linalg.norm(np.array(vec)) + eps
-    w = np.array([np.cos(waypt[2]/180*np.pi), np.sin(waypt[2]/180*np.pi)])
-    cross = np.cross(w, vec/lv)
+    vec = np.array([x - waypt[0], y - waypt[1], 0.0])
+    lv = np.linalg.norm(np.array(vec[:2])) + eps
+    w = np.array([np.cos(waypt[2]/180*np.pi), np.sin(waypt[2]/180*np.pi), 0.0])
+    cross = np.cross(w, vec/lv)[2]
     dis = - lv * cross
-    return dis, w
+    return dis, w[:2]
 
 
 def get_preview_lane_dis(waypoints, x, y, idx=2):
@@ -147,11 +147,11 @@ def get_preview_lane_dis(waypoints, x, y, idx=2):
     """
     waypt = waypoints[idx]
     vec = np.array([x - waypt[0], y - waypt[1], 0.0])
-    lv = np.linalg.norm(vec)
+    lv = np.linalg.norm(vec[:2])
     w = np.array([np.cos(waypt[2]/180*np.pi), np.sin(waypt[2]/180*np.pi), 0.0])
     cross = np.cross(w, vec/lv)[2]
     dis = - lv * cross
-    return dis, w
+    return dis, w[:2]
 
 
 def is_within_distance_ahead(target_location, current_location, orientation, max_distance):
