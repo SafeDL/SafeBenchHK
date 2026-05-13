@@ -17,7 +17,8 @@ build/
 *.h5
 
 # Log and experiment data
-log/
+log/Central/
+log/ShaTin/
 Bench2DriveZOO/
 tools/map_waypoints/
 tools/scenario_data/
