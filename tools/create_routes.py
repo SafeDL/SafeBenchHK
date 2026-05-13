@@ -175,7 +175,7 @@ def check_routes_is_possible(config):
     client.set_timeout(25.0)  # 超时防卡死
     world = client.load_world(config.map)
 
-    routes_dir = os.path.join("scenario_origin/center", f"scenario_{config.scenario:02d}_routes")
+    routes_dir = os.path.join("scenario_origin", config.map, f"scenario_{config.scenario:02d}_routes")
     route_files = sorted(f for f in os.listdir(routes_dir) if f.startswith("route_") and f.endswith(".npy"))
     for route_file in route_files:
         route_path = os.path.join(routes_dir, route_file)
@@ -184,9 +184,8 @@ def check_routes_is_possible(config):
             trajectory = np.load(route_path)
             for point in trajectory:
                 x, y, z = point[:3]  # 获取前三列的坐标
-                # 使用 z=0 与运行时 route_parser.py 的行为保持一致，
-                # 确保 wmap.get_waypoint() snap 到相同的地面道路节点
-                location = carla.Location(x=x, y=y, z=0)
+                # 保留原始高度，避免多层道路地图中 snap 到错误道路层。
+                location = carla.Location(x=x, y=y, z=z)
                 waypoints_trajectory.append(location)
             waypoint_xy = calculate_interpolate_trajectory(waypoints_trajectory, world)
             if len(waypoint_xy) < 2:  # 如果生成的路点太少，认为不可行
@@ -286,8 +285,8 @@ def main(config):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--map', type=str, default='center')
-    parser.add_argument('--save_dir', type=str, default="center")
+    parser.add_argument('--map', type=str, default='1201-ShaTin12D')
+    parser.add_argument('--save_dir', type=str, default="1201-ShaTin12D")
     parser.add_argument('--scenario', type=int, default=8)
     parser.add_argument('--route', type=int, default=-1)
     parser.add_argument('--road', type=str, default='auto', choices=['auto', 'intersection', 'straight'])
@@ -297,5 +296,4 @@ if __name__ == '__main__':
 
     # 检查路径是否可行
     check_routes_is_possible(args)
-
 

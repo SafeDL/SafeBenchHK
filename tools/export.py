@@ -122,13 +122,13 @@ def main(config):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--map', type=str, default='center')
+    parser.add_argument('--map', type=str, default='1201-ShaTin12D')
     # 指定手动选取路线和场景触发位置的npy文件的存储位置
-    parser.add_argument('--origin_dir', type=str, default="scenario_origin/center")
+    parser.add_argument('--origin_dir', type=str, default="scenario_origin/1201-ShaTin12D")
     # 指定行驶route和场景触发点位置的存储位置
-    parser.add_argument('--save_dir', type=str, default="scenario_data/new_central")
+    parser.add_argument('--save_dir', type=str, default="scenario_data/new_ShaTin")
     # 指定需要导出的场景ID,默认导出所有场景
-    parser.add_argument('--scenario', type=int, default=1)
+    parser.add_argument('--scenario', type=int, default=4)
     args = parser.parse_args()
 
     main(args)

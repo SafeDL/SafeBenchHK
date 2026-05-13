@@ -344,7 +344,10 @@ class CarlaDataProvider(object):
         list_of_waypoints = []
         while waypoint and not waypoint.is_intersection:
             list_of_waypoints.append(waypoint)
-            waypoint = waypoint.next(2.0)[0]
+            next_waypoints = waypoint.next(2.0)
+            if not next_waypoints:
+                return None
+            waypoint = next_waypoints[0]
 
         # If the list is empty, the actor is in an intersection
         if not list_of_waypoints:

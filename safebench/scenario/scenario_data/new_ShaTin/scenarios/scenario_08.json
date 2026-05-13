@@ -1,0 +1,73 @@
+{
+  "available_scenarios": [
+    {
+      "1201-ShaTin12D": [
+        {
+          "available_event_configurations": [
+            {
+              "other_actors": {
+                "left": [
+                  {
+                    "pitch": "-1.79",
+                    "x": "-203.29",
+                    "y": "-45.62",
+                    "yaw": "26.05",
+                    "z": "-33.54"
+                  }
+                ]
+              },
+              "transform": {
+                "pitch": "0.89",
+                "x": "-197.13",
+                "y": "-50.35",
+                "yaw": "271.64",
+                "z": "-33.05"
+              }
+            },
+            {
+              "other_actors": {
+                "left": [
+                  {
+                    "pitch": "0.89",
+                    "x": "-197.13",
+                    "y": "-50.35",
+                    "yaw": "271.64",
+                    "z": "-33.05"
+                  }
+                ]
+              },
+              "transform": {
+                "pitch": "-1.79",
+                "x": "-203.29",
+                "y": "-45.62",
+                "yaw": "26.05",
+                "z": "-33.54"
+              }
+            },
+            {
+              "other_actors": {
+                "left": [
+                  {
+                    "pitch": "3.64",
+                    "x": "-83.68",
+                    "y": "-184.32",
+                    "yaw": "24.32",
+                    "z": "-21.88"
+                  }
+                ]
+              },
+              "transform": {
+                "pitch": "-1.13",
+                "x": "-77.97",
+                "y": "-193.44",
+                "yaw": "216.29",
+                "z": "-21.65"
+              }
+            }
+          ],
+          "scenario_name": "NoSignalJunctionCrossingRoute"
+        }
+      ]
+    }
+  ]
+}

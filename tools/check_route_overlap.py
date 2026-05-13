@@ -403,20 +403,20 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         description="检查新路线是否与已知 XML 路线重叠，并删除重叠路线及对应场景文件"
     )
-    parser.add_argument('--map',      type=str, default='center',
+    parser.add_argument('--map',      type=str, default='1201-ShaTin12D',
                         help='CARLA 地图名称（需与 CARLA 服务器一致）')
-    parser.add_argument('--scenario', type=int, default=1,
+    parser.add_argument('--scenario', type=int, default=4,
                         help='场景编号（如 1 对应 scenario_01）')
-    parser.add_argument('--origin_dir', type=str, default='scenario_origin/center',
+    parser.add_argument('--origin_dir', type=str, default='scenario_origin/1201-ShaTin12D',
                         help='新路线 npy 文件的根目录（含 scenario_XX_routes 子目录）')
-    parser.add_argument('--known_dir',  type=str, default='scenario_data/central',
+    parser.add_argument('--known_dir',  type=str, default='scenario_data/ShaTin',
                         help='已知路线 XML 文件的根目录（含 scenario_XX_routes 子目录）')
     parser.add_argument('--port', type=int, default=2000,
                         help='CARLA 服务器端口')
     parser.add_argument('--endpoint_thresh', type=float, default=20.0,
                         help='端点距离阈值（米）：新路线与已知路线的 GRP 密集轨迹首/尾距离'
                              '均低于此值时才进入精细重叠度检查')
-    parser.add_argument('--overlap_thresh', type=float, default=0.6,
+    parser.add_argument('--overlap_thresh', type=float, default=0.3,
                         help='轨迹重叠比例阈值（0~1）：任一方向重叠比例超过此值则判定为重叠')
 
     args = parser.parse_args()

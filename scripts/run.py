@@ -3,7 +3,7 @@
 2、根据命令行参数指定的路径加载agent和scenario的配置文件
 3、根据runner的类型执行相应的run方法
 """
-
+import argparse
 import traceback
 import os.path as osp
 import time
@@ -14,9 +14,8 @@ from safebench.carla_runner import CarlaRunner
 
 
 if __name__ == '__main__':
-    import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument('--exp_name', type=str, default='scenario_01_results')
+    parser.add_argument('--exp_name', type=str, default='scenario_08_results')
 
     # 定义测试结果的输出目录
     parser.add_argument('--output_dir', type=str, default='log')

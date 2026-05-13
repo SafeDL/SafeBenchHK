@@ -13,10 +13,10 @@ def calculate_interpolate_trajectory(config, world, grp=None):
     """
     计算插值轨迹。
 
-    trajectory 中的 z 值由 route_parser.py 统一设置为 0，与
-    tools/create_routes.py 中 check_routes_is_possible 的验证行为保持一致。
-    若此处规划失败，说明该路线在创建阶段就未能通过验证，应在 tools/create_routes.py
-    中重新选点并重新导出。
+    trajectory 中的 z 值来自导出的 route XML。对带高架/隧道/坡道的
+    多层地图，保留高度可以避免 get_waypoint() snap 到错误道路层。
+    若此处规划失败，说明该路线在当前地图拓扑中不可达，应在
+    tools/create_routes.py 中重新选点并重新导出。
     """
     if grp is None:
         grp = GlobalRoutePlanner(world.get_map(), 2.0)
@@ -53,22 +53,29 @@ class ScenarioDataLoader:
         self.town = town.lower()  # 将城镇名称转换为小写
         self.world = world
         self.routes = []
+        self.valid_scenario_idx = list(range(len(config_lists)))
 
         # If using CARLA maps, manually check overlaps
         if 'safebench' not in self.town:
             grp = GlobalRoutePlanner(world.get_map(), 2.0)
             failed_routes = []
-            for config in config_lists:
+            failed_idx = set()
+            for idx, config in enumerate(config_lists):
                 try:
                     self.routes.append(calculate_interpolate_trajectory(config, world, grp=grp))
                 except RouteInterpolationError as e:
                     failed_routes.append(config.route_id)
+                    failed_idx.add(idx)
                     self.routes.append([])
             if failed_routes:
                 unique_failed_routes = sorted(set(failed_routes))
                 print(f"[跳过] 以下 {len(unique_failed_routes)} 条测试路线路径规划失败:")
                 for route_id in unique_failed_routes:
                     print(f"  - route_{route_id}")
+                self.valid_scenario_idx = [
+                    idx for idx in self.valid_scenario_idx
+                    if idx not in failed_idx
+                ]
 
         # 在当前城镇下,一共设计了多少个测试场景
         self.num_total_scenario = len(config_lists)
@@ -76,7 +83,7 @@ class ScenarioDataLoader:
 
     def reset_idx_counter(self):
         # 将场景索引重置为从0到总场景数量的列表
-        self.scenario_idx = list(range(self.num_total_scenario))
+        self.scenario_idx = list(self.valid_scenario_idx)
 
     def _select_non_overlap_idx_safebench(self, remaining_ids, sample_num):
         # 根据区域选择不重叠的场景索引
