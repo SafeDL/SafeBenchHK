@@ -230,9 +230,7 @@ class PerceptionReplayBuffer:
     def sample(self, batch_size):
         # prepare concatenated list
         prepared_bbox_label = []
-        prepared_predictions = []
         prepared_obs = []
-        prepared_scenario_actions = []
         prepared_loss = []
         # get the length of each sub-buffer
         samples_per_trajectory = self.buffer_capacity // self.num_scenario # assume average over all sub-buffer
@@ -243,8 +241,6 @@ class PerceptionReplayBuffer:
 
             # concat
             prepared_bbox_label += self.buffer_bbox_label[s_i][start_idx:]
-            prepared_predictions += self.buffer_predictions[s_i][start_idx:]
-            prepared_scenario_actions += self.buffer_scenario_actions[s_i][start_idx:]
             prepared_obs += self.buffer_obs[s_i][start_idx:]
             prepared_loss += self.buffer_loss[s_i][start_idx:]
         # sample from concatenated list
@@ -252,9 +248,6 @@ class PerceptionReplayBuffer:
 
         batch = {
             'label': np.stack(prepared_bbox_label)[sample_index, :],        
-            # 'prediction': np.stack(prepared_predictions)[sample_index, :],     # TODO: Multiple/empty predictions should be stacked together
-            # 'attack': np.stack(prepared_scenario_actions)[sample_index, :],
-            # 'attack': torch.stack(prepared_scenario_actions)[sample_index, :],
             'image': np.stack(prepared_obs)[sample_index, :],
             'loss': np.stack(prepared_loss)[sample_index],                       # scalar with 1D 
         }

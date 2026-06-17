@@ -1,13 +1,11 @@
 """
 计算自动驾驶任务和感知任务的评分指标,具体包括：
 1、cal_out_of_road_length: 计算车辆偏离道路的长度
-2、cal_avg_yaw_velocity: 计算车辆在任务过程中的偏航速度
-3、get_route_scores: 计算安全性、任务性能和舒适性方面的评分，包括碰撞率、偏离道路的长度、路线完成度、平均行驶时间等
-4、compute_ap: 计算感知任务的平均精度
-5、get_perception_scores: 计算感知任务的评分，包括平均IoU和mAP
+2、get_route_scores: 计算安全性和任务性能评分，包括碰撞率、偏离道路的长度、路线完成度、平均行驶时间等
+3、compute_ap: 计算感知任务的平均精度
+4、get_perception_scores: 计算感知任务的评分，包括平均IoU和mAP
 """
 import joblib
-import math
 import numpy as np
 from copy import deepcopy
 import argparse
@@ -32,23 +30,11 @@ def cal_out_of_road_length(sequence):
     return total_length
 
 
-def cal_avg_yaw_velocity(sequence):
-    total_yaw_change = 0
-    for i, time_stamp in enumerate(sequence):
-        if i == 0:
-            continue
-        total_yaw_change += abs(sequence[i]['ego_yaw'] - sequence[i - 1]['ego_yaw'])
-    total_yaw_change = total_yaw_change / 180 * math.pi
-    avg_yaw_velocity = total_yaw_change / (sequence[-1]['current_game_time'] - sequence[0]['current_game_time'])
-
-    return avg_yaw_velocity
-
-
 def get_route_scores(record_dict, time_out=30):
     # safety level
     num_collision = 0
     sum_out_of_road_length = 0
-    for data_id, sequence in record_dict.items():
+    for sequence in record_dict.values():
         if sequence[-1]['collision'] == Status.FAILURE:
             num_collision += 1
         sum_out_of_road_length += cal_out_of_road_length(sequence)
@@ -60,7 +46,7 @@ def get_route_scores(record_dict, time_out=30):
     total_route_completion = 0
     total_time_spent = 0
     total_distance_to_route = 0
-    for data_id, sequence in record_dict.items():
+    for sequence in record_dict.values():
         total_route_completion += sequence[-1]['route_complete'] / 100
         total_time_spent += sequence[-1]['current_game_time'] - sequence[0]['current_game_time']
         avg_distance_to_route = 0
@@ -71,18 +57,6 @@ def get_route_scores(record_dict, time_out=30):
     avg_distance_to_route = total_distance_to_route / len(record_dict)
     route_completion = total_route_completion / len(record_dict)
     avg_time_spent = total_time_spent / len(record_dict)
-
-    # comfort level
-    num_lane_invasion = 0
-    total_acc = 0
-    total_yaw_velocity = 0
-    for data_id, sequence in record_dict.items():
-        num_lane_invasion += sequence[-1]['lane_invasion']
-        avg_acc = 0
-        for time_stamp in sequence:
-            avg_acc += math.sqrt(time_stamp['ego_acceleration_x'] ** 2 + time_stamp['ego_acceleration_y'] ** 2 + time_stamp['ego_acceleration_z'] ** 2)
-        total_acc += avg_acc / len(sequence)
-        total_yaw_velocity += cal_avg_yaw_velocity(sequence)
 
     predefined_max_values = {
         # safety level

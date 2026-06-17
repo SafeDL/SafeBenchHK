@@ -204,15 +204,12 @@ class RoutePlanner():
 
         if self._target_waypoint is not None:
             if self._target_waypoint.is_intersection:
-                potential_lights = []
                 min_angle = 180.0
-                sel_magnitude = 0.0
                 sel_traffic_light = None
                 for traffic_light in lights_list:
                     loc = traffic_light.get_location()
                     magnitude, angle = compute_magnitude_angle(loc, ego_vehicle_location, self._vehicle.get_transform().rotation.yaw)
                     if magnitude < 80.0 and angle < min(25.0, min_angle):
-                        sel_magnitude = magnitude
                         sel_traffic_light = traffic_light
                         min_angle = angle
 

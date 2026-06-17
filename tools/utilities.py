@@ -214,7 +214,7 @@ def copy_routes_and_scenarios(old_map_name, new_map_name):
         shutil.rmtree(new_map_dir)
 
     coord_shift = get_map_centers(new_map_name)[0: 1] - get_map_centers(old_map_name)[0: 1]
-    for dir_path, dir_names, file_names in os.walk(old_map_dir):
+    for dir_path, _, file_names in os.walk(old_map_dir):
         for file_name in file_names:
             # 只处理后缀为.npy的文件
             if file_name.endswith('.npy'):
@@ -266,7 +266,6 @@ if __name__ == '__main__':
     a = get_view_centers("town_4intersection_2lane")
     plt.scatter(a[:, 0], a[:, 1], color='r')
     plt.show()
-
 
 
 

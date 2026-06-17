@@ -42,13 +42,12 @@ SOURCE_BASE = "/media/hp/DATA/STFProject/Scenarios/new_ShaTin"
 # corner case 视频输出目录
 DEST_BASE = PROJECT_ROOT / "log" / "new_ShaTin" / "Corner"
 
-# 默认处理 S02 ~ S08；如果只想验证单个场景，可运行：python log/collect_corner_videos.py --scenarios 1
+# 默认处理 S01 ~ S08；如果只想验证单个场景，可运行：python log/collect_corner_videos.py --scenarios 1
 SCENARIO_RANGE = range(1, 9)
 
 MIN_FRAMES = 10
 RISK_STATUSES = ("COLLISION", "FAILURE")
-SAFE_STATUSES = ("SUCCESS", "RUNNING")
-COPYABLE_STATUSES = RISK_STATUSES + SAFE_STATUSES
+COPYABLE_STATUSES = RISK_STATUSES + ("SUCCESS", "RUNNING")
 
 RAW_VIDEO_PATTERN = re.compile(r"video_\d+_id_(\d+)\.mp4$", re.IGNORECASE)
 
@@ -177,11 +176,6 @@ def get_scenario_result_dir(source_base, agent_key, scenario_idx):
     return os.path.join(source_base, AGENTS[agent_key]["source_folder"], scenario_name)
 
 
-def get_video_dir(source_base, agent_key, scenario_idx):
-    result_dir = get_scenario_result_dir(source_base, agent_key, scenario_idx)
-    return os.path.join(result_dir, "video")
-
-
 def build_video_id_map(video_dir):
     """扫描视频文件夹，建立 video_id -> 文件绝对路径 的映射。"""
     video_id_map = {}
@@ -210,7 +204,7 @@ def load_agent_result(source_base, agent_key, scenario_idx):
     """加载单个 agent 在单个 scenario 下的状态和视频映射。"""
     result_dir = get_scenario_result_dir(source_base, agent_key, scenario_idx)
     pkl_path = os.path.join(result_dir, "eval_results", "records.pkl")
-    video_dir = get_video_dir(source_base, agent_key, scenario_idx)
+    video_dir = os.path.join(result_dir, "video")
 
     if not os.path.exists(pkl_path):
         print(f"  records.pkl 不存在：{pkl_path}")
@@ -223,36 +217,16 @@ def load_agent_result(source_base, agent_key, scenario_idx):
     return status_dict, video_id_map
 
 
-def is_risk_status(status):
-    return status in RISK_STATUSES
-
-
-def is_copyable_status(status):
-    return status in COPYABLE_STATUSES
-
-
 def get_status_suffix(agent_key, status):
     agent = AGENTS[agent_key]
-    if is_risk_status(status):
+    if status in RISK_STATUSES:
         return agent["risk_suffix"]
     return agent["safe_suffix"]
 
 
-def format_video_id(video_id):
-    return f"{int(video_id):04d}"
-
-
 def build_dest_filename(scenario_tag, video_id, suffix):
     prefix = SCENE_PREFIX[scenario_tag]
-    return f"{prefix}_{format_video_id(video_id)}{suffix}.mp4"
-
-
-def copy_corner_video(source_path, dest_path, dry_run=False):
-    if dry_run:
-        return
-
-    os.makedirs(os.path.dirname(dest_path), exist_ok=True)
-    shutil.copy2(source_path, dest_path)
+    return f"{prefix}_{int(video_id):04d}{suffix}.mp4"
 
 
 def build_pair_copy_plan(
@@ -269,7 +243,7 @@ def build_pair_copy_plan(
         ("autopilot", autopilot_status.get(video_id, "MISSING"), autopilot_videos.get(video_id)),
     )
 
-    if any(not is_copyable_status(status) for _, status, _ in pair):
+    if any(status not in COPYABLE_STATUSES for _, status, _ in pair):
         return None, "invalid_status"
     if any(source_path is None for _, _, source_path in pair):
         return None, "missing_video"
@@ -304,12 +278,15 @@ def process_scenario(scenario_idx, source_base, dest_base, dry_run=False):
     all_video_ids = sorted(set(tcp_status.keys()) | set(autopilot_status.keys()))
     corner_ids = [
         video_id for video_id in all_video_ids
-        if is_risk_status(tcp_status.get(video_id, "MISSING"))
-        or is_risk_status(autopilot_status.get(video_id, "MISSING"))
+        if tcp_status.get(video_id, "MISSING") in RISK_STATUSES
+        or autopilot_status.get(video_id, "MISSING") in RISK_STATUSES
     ]
 
-    tcp_risk_ids = {video_id for video_id, status in tcp_status.items() if is_risk_status(status)}
-    autopilot_risk_ids = {video_id for video_id, status in autopilot_status.items() if is_risk_status(status)}
+    tcp_risk_ids = {video_id for video_id, status in tcp_status.items() if status in RISK_STATUSES}
+    autopilot_risk_ids = {
+        video_id for video_id, status in autopilot_status.items()
+        if status in RISK_STATUSES
+    }
 
     summary = Counter()
     summary["corner_triggered"] = len(corner_ids)
@@ -337,7 +314,9 @@ def process_scenario(scenario_idx, source_base, dest_base, dry_run=False):
             continue
 
         for source_path, dest_path in copy_plan:
-            copy_corner_video(source_path, dest_path, dry_run=dry_run)
+            if not dry_run:
+                os.makedirs(os.path.dirname(dest_path), exist_ok=True)
+                shutil.copy2(source_path, dest_path)
         summary["corner_pairs"] += 1
         summary["videos_copied"] += len(copy_plan)
 

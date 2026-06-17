@@ -50,8 +50,8 @@ def main():
     client.set_timeout(60.0)
 
     world = client.load_world(args.map)
-    waypoints_sparse, waypoints_sparse_list = generate_waypoints(world, 8.0)
-    waypoints_dense, waypoints_dense_list = generate_waypoints(world, 1.0)
+    waypoints_sparse, _ = generate_waypoints(world, 8.0)
+    waypoints_dense, _ = generate_waypoints(world, 1.0)
     save_dir = f'map_waypoints/{args.map}'
     os.makedirs(save_dir, exist_ok=True)
     np.save(os.path.join(save_dir, 'sparse.npy'), waypoints_sparse)
@@ -62,4 +62,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
