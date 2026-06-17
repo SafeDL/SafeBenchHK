@@ -19,6 +19,9 @@ build/
 # Log and experiment data
 log/Central/
 log/ShaTin/
+log/new_Central/
+log/new_ShaTin/
+log/template/
 Bench2DriveZOO/
 tools/map_waypoints/
 tools/scenario_data/

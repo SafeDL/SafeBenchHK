@@ -28,12 +28,23 @@ from collections import Counter
 def load_pickle_data(pkl_path):
     """读取 records.pkl，并返回反序列化后的轨迹数据。"""
     with open(pkl_path, "rb") as f:
-        data = pickle.load(f)
-    return data
+        return pickle.load(f)
 
 
 # 少于此帧数的轨迹通常是不完整评测或异常中断结果，跳过可减少误分类。
 MIN_FRAMES = 10
+RISK_STATUSES = ("COLLISION", "FAILURE")
+SAFE_STATUSES = ("SUCCESS", "RUNNING")
+SKIPPED_STATUSES = ("TOO_SHORT", "EMPTY")
+STATUS_PRINT_ORDER = RISK_STATUSES + SAFE_STATUSES + SKIPPED_STATUSES
+
+
+def normalize_status(status):
+    status_text = str(status)
+    for known_status in ("COLLISION", "FAILURE", "SUCCESS", "RUNNING"):
+        if known_status in status_text:
+            return known_status
+    return status_text
 
 
 def analyze_final_collision_status(data):
@@ -51,44 +62,31 @@ def analyze_final_collision_status(data):
 
         # 过短场景跳过分类
         if len(frames) < MIN_FRAMES:
-            print(f"  ⏭️  轨迹 {key} 仅有 {len(frames)} 帧（< {MIN_FRAMES}），已跳过分类")
+            print(f" 轨迹 {key} 仅有 {len(frames)} 帧（< {MIN_FRAMES}），已跳过分类")
             final_collision_status[key] = 'TOO_SHORT'
             continue
 
         # 只使用最后一帧状态作为最终评测结果，避免中间 RUNNING 状态影响分类。
         last_frame = frames[-1]
-        status = str(last_frame.get('collision', 'UNKNOWN'))
-
-        if 'RUNNING' in status:
-            final_collision_status[key] = 'RUNNING'
-        elif 'COLLISION' in status:
-            final_collision_status[key] = 'COLLISION'
-        elif 'SUCCESS' in status:
-            final_collision_status[key] = 'SUCCESS'
-        elif 'FAILURE' in status:
-            final_collision_status[key] = 'FAILURE'
-        else:
-            final_collision_status[key] = status  # 其他枚举或未知状态
+        final_collision_status[key] = normalize_status(last_frame.get('collision', 'UNKNOWN'))
 
     return final_collision_status
 
 
 def print_status_summary(status_dict):
     """打印最终状态统计，便于快速检查本轮评测是否存在异常失败。"""
-    # 先定位 FAILURE 轨迹；当前只保留入口，若需要可在 pass 处打印 key。
-    print("\n❗ 所有最终状态为 FAILURE 的轨迹：")
-    failure_keys = [k for k, v in status_dict.items() if v == 'FAILURE']
-    if failure_keys:
-        for k in failure_keys:
-            pass
-    else:
-        print("没有 FAILURE 状态的轨迹。")
-
-    # 汇总 SUCCESS、COLLISION、FAILURE、RUNNING、TOO_SHORT、EMPTY 等状态数量。
     print("\n📊 各状态数量统计：")
     status_counts = Counter(status_dict.values())
-    for status, count in status_counts.items():
-        print(f"{status}: {count} 条")
+
+    printed_statuses = set()
+    for status in STATUS_PRINT_ORDER:
+        count = status_counts.get(status, 0)
+        if count > 0:
+            print(f"{status}: {count} 条")
+            printed_statuses.add(status)
+
+    for status in sorted(status_counts.keys() - printed_statuses):
+        print(f"{status}: {status_counts[status]} 条")
 
 
 def build_video_id_map(video_dir):
@@ -149,7 +147,7 @@ def copy_videos_by_collision(status_dict, video_id_map, safe_dir, risk_dir):
         filename = os.path.basename(video_path)
 
         # COLLISION 和 FAILURE 都视为危险场景
-        if status in ('COLLISION', 'FAILURE'):
+        if status in RISK_STATUSES:
             dest = os.path.join(risk_dir, filename)
             risk_count += 1
         else:
@@ -159,8 +157,8 @@ def copy_videos_by_collision(status_dict, video_id_map, safe_dir, risk_dir):
         shutil.copy2(video_path, dest)
 
     print(f"\n📁 视频分类复制完成：")
-    print(f"  ✅ Safe: {safe_count} 个视频 → {safe_dir}")
     print(f"  ⚠️  Risk: {risk_count} 个视频 → {risk_dir}")
+    print(f"  ✅ Safe: {safe_count} 个视频 → {safe_dir}")
     if skipped_count > 0:
         print(f"  ⏭️  已跳过 (TOO_SHORT/EMPTY): {skipped_count} 个轨迹")
     if missing_count > 0:
@@ -213,11 +211,11 @@ def process_scenario(scenario_idx, source_base, dest_base):
 if __name__ == "__main__":
     # ========== 配置路径 ==========
     # 原始数据根目录（包含 scenario_01_results ~ scenario_08_results）
-    source_base = "/media/hp/DATA/ShaTin/first_round_of_TCP"
+    source_base = "/media/hp/DATA/STFProject/Scenarios/new_ShaTin/TCP"
     # 目标根目录（下设 S01~S08，每个含 Safe/ 和 Risk/）
-    dest_base = "/home/hp/STF/SafeBenchHK/SafeBenchHK/log/ShaTin/TCP"
+    dest_base = "/home/hp/STF/SafeBenchHK/SafeBenchHK/log/new_ShaTin/TCP"
     # 要处理的场景编号范围
-    scenario_range = range(1,8)  # 当前会处理 S01 ~ S07；若要包含 S08，应改为 range(1, 9)。
+    scenario_range = range(1, 9)
     # ==============================
 
     for idx in scenario_range:
