@@ -18,7 +18,7 @@ DEFAULT_DATA_DIR = osp.abspath(osp.dirname(osp.dirname(osp.dirname(__file__))))
 FORCE_DATESTAMP = False
 
 
-def setup_logger_kwargs(exp_name, output_dir, seed, datestamp=False, agent=None, scenario=None, scenario_category='planning'):
+def setup_logger_kwargs(exp_name, output_dir, datestamp=False, scenario_category='planning'):
     # Datestamp forcing
     datestamp = datestamp or FORCE_DATESTAMP
 
@@ -26,7 +26,6 @@ def setup_logger_kwargs(exp_name, output_dir, seed, datestamp=False, agent=None,
     ymd_time = time.strftime("%Y-%m-%d_") if datestamp else ''
     relpath = ''.join([ymd_time, exp_name])
 
-    # Make a seed-specific subfolder in the experiment directory.
     data_dir = os.path.join(DEFAULT_DATA_DIR, output_dir)
     logger_kwargs = dict(
         output_dir=osp.join(data_dir, relpath),

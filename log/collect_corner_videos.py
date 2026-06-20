@@ -1,5 +1,4 @@
 import argparse
-import os
 import pickle
 import re
 import shutil
@@ -36,15 +35,12 @@ from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
-SOURCE_BASE = "/media/hp/DATA/STFProject/Scenarios/central"
+SOURCE_BASE = Path("/media/hp/DATA/STFProject/Scenarios/central")
 DEST_BASE = PROJECT_ROOT / "log" / "central"
 SCENARIO_RANGE = range(2, 9)
 
 MIN_FRAMES = 10
 CATEGORIES = ("Safe", "Corner", "Risk")
-RISK_STATUSES = ("COLLISION", "FAILURE")
-SAFE_STATUSES = ("SUCCESS", "RUNNING")
-COPYABLE_STATUSES = RISK_STATUSES + SAFE_STATUSES
 RAW_VIDEO_PATTERN = re.compile(r"video_\d+_id_(\d+)\.mp4$", re.IGNORECASE)
 
 SCENE_PREFIX = {
@@ -58,15 +54,13 @@ SCENE_PREFIX = {
     "S08": "NoSignalJunctionCrossingRoute",
 }
 
-AGENTS = {
-    "tcp": {
-        "source_folder": "TCP",
-        "suffix": "_tcp",
-    },
-    "autopilot": {
-        "source_folder": "carla_agent",
-        "suffix": "_autopilot",
-    },
+AGENT_FOLDERS = {
+    "tcp": "TCP",
+    "autopilot": "carla_agent",
+}
+AGENT_SUFFIXES = {
+    "tcp": "_tcp",
+    "autopilot": "_autopilot",
 }
 
 
@@ -86,6 +80,12 @@ class SafeBenchRecordsUnpickler(pickle.Unpickler):
         if module == self.STATUS_MODULE and name == "Status":
             return SafeBenchStatus
         return super().find_class(module, name)
+
+
+RISK_STATUSES = {"COLLISION", SafeBenchStatus.FAILURE.name}
+SAFE_STATUSES = {SafeBenchStatus.SUCCESS.name, SafeBenchStatus.RUNNING.name}
+COPYABLE_STATUSES = RISK_STATUSES | SAFE_STATUSES
+KNOWN_STATUSES = COPYABLE_STATUSES | {SafeBenchStatus.INVALID.name}
 
 
 def parse_scenarios(value):
@@ -109,8 +109,12 @@ def load_pickle_data(pkl_path):
 
 
 def normalize_status(status):
+    status_name = getattr(status, "name", None)
+    if status_name in KNOWN_STATUSES:
+        return status_name
+
     status_text = str(status)
-    for known_status in RISK_STATUSES + SAFE_STATUSES + ("INVALID",):
+    for known_status in KNOWN_STATUSES:
         if known_status in status_text:
             return known_status
     return status_text
@@ -138,32 +142,30 @@ def analyze_final_collision_status(data):
 
 def get_scenario_result_dir(source_base, agent_key, scenario_idx):
     scenario_name = f"scenario_{scenario_idx:02d}_results"
-    return os.path.join(source_base, AGENTS[agent_key]["source_folder"], scenario_name)
+    return source_base / AGENT_FOLDERS[agent_key] / scenario_name
 
 
 def build_video_id_map(video_dir):
     video_id_map = {}
 
-    if not os.path.isdir(video_dir):
+    if not video_dir.is_dir():
         print(f"  video 文件夹不存在：{video_dir}")
         return video_id_map
 
-    for root, dirnames, filenames in os.walk(video_dir):
-        dirnames.sort()
-        for filename in sorted(filenames):
-            match = RAW_VIDEO_PATTERN.match(filename)
-            if match:
-                video_id_map[int(match.group(1))] = os.path.join(root, filename)
+    for path in sorted(video_dir.rglob("*.mp4")):
+        match = RAW_VIDEO_PATTERN.match(path.name)
+        if match:
+            video_id_map[int(match.group(1))] = path
 
     return video_id_map
 
 
 def load_agent_result(source_base, agent_key, scenario_idx):
     result_dir = get_scenario_result_dir(source_base, agent_key, scenario_idx)
-    pkl_path = os.path.join(result_dir, "eval_results", "records.pkl")
-    video_dir = os.path.join(result_dir, "video")
+    pkl_path = result_dir / "eval_results" / "records.pkl"
+    video_dir = result_dir / "video"
 
-    if not os.path.exists(pkl_path):
+    if not pkl_path.exists():
         print(f"  records.pkl 不存在：{pkl_path}")
         return {}, {}
 
@@ -183,7 +185,7 @@ def classify_pair(tcp_status, autopilot_status):
 
 
 def build_dest_filename(scenario_tag, video_id, agent_key, status, category):
-    suffix = AGENTS[agent_key]["suffix"]
+    suffix = AGENT_SUFFIXES[agent_key]
     if category == "Corner":
         suffix += "_risk" if status in RISK_STATUSES else "_safe"
 
@@ -191,25 +193,25 @@ def build_dest_filename(scenario_tag, video_id, agent_key, status, category):
 
 
 def build_pair_copy_plan(scenario_tag, dest_base, category, video_id, pair):
-    scenario_dest_dir = os.path.join(str(dest_base), category, scenario_tag)
+    scenario_dest_dir = dest_base / category / scenario_tag
     copy_plan = []
 
     for agent_key, status, source_path in pair:
         dest_filename = build_dest_filename(scenario_tag, video_id, agent_key, status, category)
-        copy_plan.append((source_path, os.path.join(scenario_dest_dir, dest_filename)))
+        copy_plan.append((source_path, scenario_dest_dir / dest_filename))
 
     return copy_plan
 
 
 def copy_videos(copy_plan):
     for source_path, dest_path in copy_plan:
-        os.makedirs(os.path.dirname(dest_path), exist_ok=True)
+        dest_path.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(source_path, dest_path)
 
 
 def ensure_category_dirs(dest_base, scenario_tag):
     for category in CATEGORIES:
-        os.makedirs(os.path.join(str(dest_base), category, scenario_tag), exist_ok=True)
+        (dest_base / category / scenario_tag).mkdir(parents=True, exist_ok=True)
 
 
 def process_scenario(scenario_idx, source_base, dest_base):
@@ -223,12 +225,7 @@ def process_scenario(scenario_idx, source_base, dest_base):
         print(f"{scenario_tag}: 没有可用状态数据，跳过")
         return Counter()
 
-    summary = Counter({
-        "tcp_records": len(tcp_status),
-        "autopilot_records": len(autopilot_status),
-        "tcp_videos": len(tcp_videos),
-        "autopilot_videos": len(autopilot_videos),
-    })
+    summary = Counter()
 
     all_video_ids = sorted(set(tcp_status) | set(autopilot_status))
     for video_id in all_video_ids:
@@ -245,20 +242,21 @@ def process_scenario(scenario_idx, source_base, dest_base):
             summary["missing_video"] += 1
             continue
 
-        copy_videos(build_pair_copy_plan(scenario_tag, dest_base, category, video_id, pair))
+        copy_plan = build_pair_copy_plan(scenario_tag, dest_base, category, video_id, pair)
+        copy_videos(copy_plan)
         summary[category] += 1
         summary["paired_cases"] += 1
-        summary["videos_copied"] += 2
+        summary["videos_copied"] += len(copy_plan)
 
     print(
         f"{scenario_tag}: Safe {summary['Safe']}，Corner {summary['Corner']}，"
         f"Risk {summary['Risk']}；已复制视频 {summary['videos_copied']} 个"
     )
-    print(
-        f"  记录/视频: TCP {summary['tcp_records']}/{summary['tcp_videos']}，"
-        f"CarlaAgent {summary['autopilot_records']}/{summary['autopilot_videos']}；"
-        f"跳过 状态不可复制 {summary['invalid_status']}，缺视频 {summary['missing_video']}"
-    )
+    if summary["invalid_status"] or summary["missing_video"]:
+        print(
+            f"  跳过: 状态不可复制 {summary['invalid_status']}，"
+            f"缺视频 {summary['missing_video']}"
+        )
 
     return summary
 
@@ -269,12 +267,14 @@ def parse_args():
     )
     parser.add_argument(
         "--source-base",
+        type=Path,
         default=SOURCE_BASE,
         help="原始测试结果根目录，需包含 TCP/ 和 carla_agent/。",
     )
     parser.add_argument(
         "--dest-base",
-        default=str(DEST_BASE),
+        type=Path,
+        default=DEST_BASE,
         help="地图输出根目录，脚本会在其下创建 Safe/Corner/Risk/Sxx。",
     )
     parser.add_argument(

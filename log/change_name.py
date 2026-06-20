@@ -1,6 +1,3 @@
-import re
-from pathlib import Path
-
 """
 脚本用途：
     对评测生成的视频目录进行原地批量重命名。
@@ -31,6 +28,9 @@ from pathlib import Path
 注意事项：
     该脚本会直接修改文件名，运行前请确认 ROOT_DIR 指向正确目录。
 """
+
+import re
+from pathlib import Path
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -184,11 +184,7 @@ def rename_suffixed_videos(scene_dir, prefix):
             skipped_paths.append(path)
             continue
 
-        parsed_items.append({
-            "path": path,
-            "old_id": int(match.group(2)),
-            "suffix": match.group(3),
-        })
+        parsed_items.append((path, int(match.group(2)), match.group(3)))
 
     if skipped_paths:
         print(f"跳过 {len(skipped_paths)} 个不符合带尾缀命名格式的视频:")
@@ -198,7 +194,7 @@ def rename_suffixed_videos(scene_dir, prefix):
     if not parsed_items:
         return 0
 
-    old_ids = sorted({item["old_id"] for item in parsed_items})
+    old_ids = sorted({old_id for _, old_id, _ in parsed_items})
     new_index_by_old_id = {
         old_id: index
         for index, old_id in enumerate(old_ids)
@@ -206,12 +202,12 @@ def rename_suffixed_videos(scene_dir, prefix):
 
     planned_pairs = [
         (
-            item["path"],
-            item["path"].with_name(
-                f"{prefix}_{new_index_by_old_id[item['old_id']]:0{NUMBER_WIDTH}d}_{item['suffix']}.mp4"
+            path,
+            path.with_name(
+                f"{prefix}_{new_index_by_old_id[old_id]:0{NUMBER_WIDTH}d}_{suffix}.mp4"
             ),
         )
-        for item in parsed_items
+        for path, old_id, suffix in parsed_items
     ]
 
     if all(old_path == new_path for old_path, new_path in planned_pairs):

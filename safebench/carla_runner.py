@@ -82,9 +82,6 @@ class CarlaRunner:
         logger_kwargs = setup_logger_kwargs(
             self.exp_name, 
             self.output_dir, 
-            self.seed,
-            agent=agent_config['policy_type'],
-            scenario=scenario_config['policy_type'],
             scenario_category=self.scenario_category
         )
         self.logger = Logger(**logger_kwargs)  # 对Kwargs进行解包成字典
