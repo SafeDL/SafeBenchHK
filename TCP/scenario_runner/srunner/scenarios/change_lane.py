@@ -18,6 +18,7 @@ The ego vehicle adjusts its velocity or changes the lane as well.
 """
 
 import random
+
 import py_trees
 import carla
 
@@ -52,46 +53,36 @@ class ChangeLane(BasicScenario):
         """
         Setup all relevant parameters and create scenario
 
-        If randomize is True, the scenario parameters are randomized
+        If randomize is True, scenario distance and speed are randomized before the behavior tree is built.
         """
         self.timeout = timeout
-        self._map = CarlaDataProvider.get_map()
-        self._reference_waypoint = self._map.get_waypoint(config.trigger_points[0].location)
+        carla_map = CarlaDataProvider.get_map()
+        self._reference_waypoint = carla_map.get_waypoint(config.trigger_points[0].location)
 
         self._fast_vehicle_velocity = 70
-        self._slow_vehicle_velocity = 0
-        self._change_lane_velocity = 15
-
-        self._slow_vehicle_distance = 100
         self._fast_vehicle_distance = 20
+        self._slow_vehicle_distance = 100
         self._trigger_distance = 30
         self._max_brake = 1
-
-        self.direction = 'left'  # direction of lane change
-        self.lane_check = 'true'  # check whether a lane change is possible
-
-        super(ChangeLane, self).__init__("ChangeLane",
-                                         ego_vehicles,
-                                         config,
-                                         world,
-                                         debug_mode,
-                                         criteria_enable=criteria_enable)
 
         if randomize:
             self._fast_vehicle_distance = random.randint(10, 51)
             self._fast_vehicle_velocity = random.randint(100, 201)
-            self._slow_vehicle_velocity = random.randint(1, 6)
+
+        super().__init__("ChangeLane",
+                         ego_vehicles,
+                         config,
+                         world,
+                         debug_mode,
+                         criteria_enable=criteria_enable)
 
     def _initialize_actors(self, config):
 
-        # add actors from xml file
         for actor in config.other_actors:
             vehicle = CarlaDataProvider.request_new_actor(actor.model, actor.transform)
             self.other_actors.append(vehicle)
             vehicle.set_simulate_physics(enabled=False)
 
-        # fast vehicle, tesla
-        # transform visible
         fast_car_waypoint, _ = get_waypoint_in_distance(self._reference_waypoint, self._fast_vehicle_distance)
         self.fast_car_visible = carla.Transform(
             carla.Location(fast_car_waypoint.transform.location.x,
@@ -99,8 +90,6 @@ class ChangeLane(BasicScenario):
                            fast_car_waypoint.transform.location.z + 1),
             fast_car_waypoint.transform.rotation)
 
-        # slow vehicle, vw
-        # transform visible
         slow_car_waypoint, _ = get_waypoint_in_distance(self._reference_waypoint, self._slow_vehicle_distance)
         self.slow_car_visible = carla.Transform(
             carla.Location(slow_car_waypoint.transform.location.x,
@@ -166,13 +155,7 @@ class ChangeLane(BasicScenario):
         A list of all test criteria will be created that is later used
         in parallel behavior tree.
         """
-        criteria = []
-
-        collision_criterion = CollisionTest(self.ego_vehicles[0])
-
-        criteria.append(collision_criterion)
-
-        return criteria
+        return [CollisionTest(self.ego_vehicles[0])]
 
     def __del__(self):
         """

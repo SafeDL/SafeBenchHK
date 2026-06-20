@@ -6,27 +6,26 @@ from pathlib import Path
     对评测生成的视频目录进行原地批量重命名。
 
 目录结构：
-    log/Central/CarlaAgent/S01
-    ├── Risk
-    │   └── *.mp4
-    └── Safe
-        └── *.mp4
+    log/Central
+    ├── Safe/S01/*.mp4
+    ├── Corner/S01/*.mp4
+    └── Risk/S01/*.mp4
 
-    或 corner case 目录：
-    log/Central/Corner/S01
-    ├── DynamicCrossing_0094_tcp_risk.mp4
-    └── DynamicCrossing_0094_autopilot_safe.mp4
+    或旧版单 agent 目录：
+    log/Central/TCP/S01
+    ├── Risk/*.mp4
+    └── Safe/*.mp4
 
 命名逻辑：
     1. 根据场景目录名 S01、S02 等自动选择前缀。
-    2. 普通目录同时处理该场景下 Risk 和 Safe 两个子目录中的 mp4 文件。
-    3. 普通目录每个子目录单独排序，并从 0000 开始重新连续编号。
+    2. 直接存放带尾缀视频的 Sxx 目录按原始测试 id 分组重命名，保证同一测试
+       场景下 TCP/CarlaAgent 对应视频重命名后的编号一致，并保留原尾缀。
+    3. 旧版单 agent 目录仍按 Risk 和 Safe 子目录分别排序，从 0000 开始连续编号。
        排序优先使用原始文件名最后一个下划线后的数字，例如：
         video_0000_id_0000.mp4 -> 0000
-    4. Corner 目录按原始测试 id 分组重命名，保证同一测试场景下 TCP/CarlaAgent
-       对应视频重命名后的编号一致，并保留来源/风险尾缀。
-    5. 再拼接为：
+    4. 再拼接为：
         {prefix}_0000.mp4
+        {prefix}_0000_tcp.mp4
         {prefix}_0000_tcp_risk.mp4
 
 注意事项：
@@ -36,10 +35,12 @@ from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
-# 可以指向包含 S01、S02 等场景目录的根目录：
-ROOT_DIR = PROJECT_ROOT / "log" / "ShaTin" / "Corner"
+# 可以指向地图根目录、分类目录或单个 Sxx 目录：
+ROOT_DIR = PROJECT_ROOT / "log" / "central"
 
-# 也可以只处理单个场景目录，例如：
+# 示例：
+# ROOT_DIR = PROJECT_ROOT / "log" / "Central"
+# ROOT_DIR = PROJECT_ROOT / "log" / "Central" / "Corner"
 # ROOT_DIR = PROJECT_ROOT / "log" / "ShaTin" / "TCP" / "S07"
 
 SCENE_PREFIX = {
@@ -53,24 +54,46 @@ SCENE_PREFIX = {
     "S08": "NoSignalJunctionCrossingRoute",
 }
 
-SUB_FOLDERS = ("Risk", "Safe")
+CATEGORY_FOLDERS = ("Safe", "Corner", "Risk")
+LEGACY_SUB_FOLDERS = ("Risk", "Safe")
 VIDEO_PATTERN = re.compile(r"_(\d+)\.mp4$", re.IGNORECASE)
-CORNER_VIDEO_PATTERN = re.compile(
-    r"^(.+)_(\d+)_(tcp_safe|tcp_risk|autopilot_safe|autopilot_risk)\.mp4$",
+SUFFIXED_VIDEO_PATTERN = re.compile(
+    r"^(.+)_(\d+)_(tcp|autopilot|tcp_safe|tcp_risk|autopilot_safe|autopilot_risk)\.mp4$",
     re.IGNORECASE,
 )
 NUMBER_WIDTH = 4
 
 
+def is_scene_dir(path):
+    return path.is_dir() and path.name in SCENE_PREFIX
+
+
+def iter_category_scene_dirs(root_dir):
+    scene_dirs = []
+
+    for category in CATEGORY_FOLDERS:
+        category_dir = root_dir / category
+        if not category_dir.is_dir():
+            continue
+
+        scene_dirs.extend(
+            path for path in category_dir.iterdir()
+            if is_scene_dir(path)
+        )
+
+    return sorted(scene_dirs, key=lambda path: (path.parent.name, path.name))
+
+
 def iter_scene_dirs(root_dir):
-    """兼容 ROOT_DIR 指向单个 Sxx 目录或包含多个 Sxx 目录的父目录。"""
+    """兼容 ROOT_DIR 指向地图根目录、分类目录、单个 Sxx 目录或旧版 Sxx 父目录。"""
     if root_dir.name in SCENE_PREFIX:
         return [root_dir]
 
-    return sorted(
-        path for path in root_dir.iterdir()
-        if path.is_dir() and path.name in SCENE_PREFIX
-    )
+    category_scene_dirs = iter_category_scene_dirs(root_dir)
+    if category_scene_dirs:
+        return category_scene_dirs
+
+    return sorted(path for path in root_dir.iterdir() if is_scene_dir(path))
 
 
 def get_sort_key(path):
@@ -80,8 +103,8 @@ def get_sort_key(path):
     return (1, path.name)
 
 
-def get_corner_sort_key(path):
-    match = CORNER_VIDEO_PATTERN.match(path.name)
+def get_suffixed_sort_key(path):
+    match = SUFFIXED_VIDEO_PATTERN.match(path.name)
     if match:
         return (0, int(match.group(2)), match.group(3).lower(), path.name)
     return (1, path.name)
@@ -142,12 +165,12 @@ def rename_videos(video_folder, prefix):
     return rename_with_plan(planned_pairs)
 
 
-def rename_corner_videos(scene_dir, prefix):
+def rename_suffixed_videos(scene_dir, prefix):
     """
-    重命名 Corner/Sxx 下直接存放的视频。
-    同一旧 video_id 的 tcp/autopilot 视频会获得同一个新编号，并保留原有尾缀。
+    重命名直接存放在 Sxx 下、带 tcp/autopilot 尾缀的视频。
+    同一旧 video_id 的成组视频会获得同一个新编号，并保留原有尾缀。
     """
-    video_paths = sorted(scene_dir.glob("*.mp4"), key=get_corner_sort_key)
+    video_paths = sorted(scene_dir.glob("*.mp4"), key=get_suffixed_sort_key)
 
     if not video_paths:
         return 0
@@ -156,7 +179,7 @@ def rename_corner_videos(scene_dir, prefix):
     skipped_paths = []
 
     for path in video_paths:
-        match = CORNER_VIDEO_PATTERN.match(path.name)
+        match = SUFFIXED_VIDEO_PATTERN.match(path.name)
         if not match:
             skipped_paths.append(path)
             continue
@@ -168,7 +191,7 @@ def rename_corner_videos(scene_dir, prefix):
         })
 
     if skipped_paths:
-        print(f"跳过 {len(skipped_paths)} 个不符合 Corner 命名格式的视频:")
+        print(f"跳过 {len(skipped_paths)} 个不符合带尾缀命名格式的视频:")
         for path in skipped_paths:
             print(f"  {path}")
 
@@ -192,14 +215,14 @@ def rename_corner_videos(scene_dir, prefix):
     ]
 
     if all(old_path == new_path for old_path, new_path in planned_pairs):
-        print(f"跳过已连续命名的 Corner 目录: {scene_dir}")
+        print(f"跳过已连续命名的带尾缀目录: {scene_dir}")
         return 0
 
     return rename_with_plan(planned_pairs)
 
 
-def is_corner_scene_dir(scene_dir):
-    return any(CORNER_VIDEO_PATTERN.match(path.name) for path in scene_dir.glob("*.mp4"))
+def is_suffixed_scene_dir(scene_dir):
+    return any(SUFFIXED_VIDEO_PATTERN.match(path.name) for path in scene_dir.glob("*.mp4"))
 
 
 def main():
@@ -217,10 +240,10 @@ def main():
         prefix = SCENE_PREFIX[scene_dir.name]
         print(f"\n处理场景: {scene_dir.name} -> {prefix}")
 
-        if is_corner_scene_dir(scene_dir):
-            total_count += rename_corner_videos(scene_dir, prefix)
+        if is_suffixed_scene_dir(scene_dir):
+            total_count += rename_suffixed_videos(scene_dir, prefix)
         else:
-            for sub_folder in SUB_FOLDERS:
+            for sub_folder in LEGACY_SUB_FOLDERS:
                 video_folder = scene_dir / sub_folder
                 total_count += rename_videos(video_folder, prefix)
 
