@@ -5,6 +5,8 @@
 - 新路线：scenario_origin/{map}/scenario_{id}_routes/route_XX.npy
   每个文件包含用户在地图上点选的 2 个稀疏路点（起点、终点），坐标为 CARLA 世界坐标。
 - 已知路线：scenario_data/{known_dir}/scenario_{id}_routes/*.xml
+  若 known_dir 是 central/ShaTin，会自动同时检查同级的 new_central/new_ShaTin；
+  反过来传入 new_central/new_ShaTin 时，也会自动补查 central/ShaTin。
   每个文件同样只包含 2 个稀疏路点（由 export_routes.py 从 npy 直接导出），
   与新路线属于不同路线集合，坐标范围不同。
 - 由于两边都只有稀疏起终点，必须对两边都调用 CARLA GlobalRoutePlanner 规划密集轨迹，
@@ -65,6 +67,22 @@ def _sort_key(filename: str) -> int:
     """按文件名中第一个数字排序。"""
     nums = re.findall(r'\d+', filename)
     return int(nums[0]) if nums else 0
+
+
+def resolve_known_dirs(known_dir: str):
+    """根据传入目录，自动补充同地图的新/旧历史集。"""
+    known_dir = os.path.normpath(known_dir)
+    parent_dir = os.path.dirname(known_dir) or "."
+    groups = {
+        "central": ("central", "new_central"),
+        "new_central": ("central", "new_central"),
+        "shatin": ("ShaTin", "new_ShaTin"),
+        "new_shatin": ("ShaTin", "new_ShaTin"),
+    }
+
+    names = groups.get(os.path.basename(known_dir).lower(), ())
+    candidates = [known_dir] + [os.path.join(parent_dir, name) for name in names]
+    return list(dict.fromkeys(path for path in candidates if os.path.isdir(path))) or [known_dir]
 
 
 def npy_to_carla_locations(waypoints_array: np.ndarray):
@@ -219,17 +237,34 @@ def collect_known_trajectories(known_routes_dir: str, world, grp):
     return trajs
 
 
+def collect_known_trajectories_from_dirs(known_dirs, scenario_id: int, world, grp):
+    """从多个历史路线根目录中收集并缓存同一 scenario 的密集轨迹。"""
+    all_trajs = []
+    print("[已知路线] 本次将检查以下历史数据目录:")
+    for known_dir in known_dirs:
+        print(f"  - {known_dir}")
+
+    for known_dir in known_dirs:
+        known_routes_dir = os.path.join(known_dir, f"scenario_{scenario_id:02d}_routes")
+        print(f"\n[已知路线] 读取历史路线目录: {known_routes_dir}")
+        trajs = collect_known_trajectories(known_routes_dir, world, grp)
+        all_trajs.extend(trajs)
+
+    print(f"[已知路线] 多目录合计缓存 {len(all_trajs)} 条密集轨迹\n")
+    return all_trajs
+
+
 def check_and_remove_overlapping_routes(config):
     """主检查函数：逐条检查新路线是否与已知路线重叠，并删除重叠路线。"""
 
     scenario_id      = config.scenario
     origin_dir       = config.origin_dir
     known_dir        = config.known_dir
+    known_dirs       = resolve_known_dirs(known_dir)
     map_name         = config.map
 
     routes_dir       = os.path.join(origin_dir, f"scenario_{scenario_id:02d}_routes")
     scenarios_dir    = os.path.join(origin_dir, f"scenario_{scenario_id:02d}_scenarios")
-    known_routes_dir = os.path.join(known_dir,  f"scenario_{scenario_id:02d}_routes")
 
     if not os.path.isdir(routes_dir):
         print(f"[错误] 新路线目录不存在: {routes_dir}")
@@ -247,7 +282,7 @@ def check_and_remove_overlapping_routes(config):
     grp = GlobalRoutePlanner(world.get_map(), 2.0)
 
     # 预先规划所有已知路线的密集轨迹并缓存
-    known_trajs = collect_known_trajectories(known_routes_dir, world, grp)
+    known_trajs = collect_known_trajectories_from_dirs(known_dirs, scenario_id, world, grp)
     if not known_trajs:
         print("[信息] 没有已知路线可比较，退出。")
         return
@@ -410,7 +445,8 @@ if __name__ == '__main__':
     parser.add_argument('--origin_dir', type=str, default='scenario_origin/1201-ShaTin12D',
                         help='新路线 npy 文件的根目录（含 scenario_XX_routes 子目录）')
     parser.add_argument('--known_dir',  type=str, default='scenario_data/ShaTin',
-                        help='已知路线 XML 文件的根目录（含 scenario_XX_routes 子目录）')
+                        help='已知路线 XML 文件的根目录（含 scenario_XX_routes 子目录）；'
+                             'central/ShaTin 会自动补查同级 new_central/new_ShaTin')
     parser.add_argument('--port', type=int, default=2000,
                         help='CARLA 服务器端口')
     parser.add_argument('--endpoint_thresh', type=float, default=20.0,

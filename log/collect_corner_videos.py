@@ -35,9 +35,9 @@ from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
-SOURCE_BASE = Path("/media/hp/DATA/STFProject/Scenarios/central")
-DEST_BASE = PROJECT_ROOT / "log" / "central"
-SCENARIO_RANGE = range(2, 9)
+SOURCE_BASE = Path("/media/hp/DATA/STFProject/Scenarios/new_ShaTin")
+DEST_BASE = PROJECT_ROOT / "log" / "new_shatin"
+SCENARIO_RANGE = range(1, 9)
 
 MIN_FRAMES = 10
 CATEGORIES = ("Safe", "Corner", "Risk")
