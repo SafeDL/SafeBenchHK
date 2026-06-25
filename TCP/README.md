@@ -1,6 +1,18 @@
 > [!IMPORTANT]
 > 🌟 Stay up to date at [opendrivelab.com](https://opendrivelab.com/#news)!
 
+# SafeBenchHK 集成说明
+
+本目录保留 TCP 端到端驾驶模型，以及 SafeBenchHK 调用 TCP 时依赖的 CARLA Leaderboard / ScenarioRunner 组件。当前项目中主要包含：
+
+- `TCP/`: TCP 模型、数据封装、增强、配置和训练代码。
+- `leaderboard/`: CARLA Leaderboard evaluator、路线/场景数据、agent wrapper 和 TCP agent 入口。
+- `scenario_runner/`: Leaderboard 栈使用的 ScenarioRunner 运行时和场景工具。
+- `roach/`: TCP 相关 agent 依赖的 Roach 鸟瞰图策略、指标和工具。
+- `tools/`: TCP 数据生成、过滤和统计辅助脚本。
+
+模型权重、运行日志、鸟瞰图地图缓存、视频等大型运行产物应保留在本地，已由根目录 `.gitignore` 覆盖。下方保留上游 TCP README，用于查询模型环境、数据生成、训练和评测细节。
+
 # TCP - Trajectory-guided Control Prediction for End-to-end Autonomous Driving: A Simple yet Strong Baseline
 
 ![teaser](assets/teaser_.png)
@@ -57,56 +69,4 @@ Training:
 python TCP/train.py --gpus NUM_OF_GPUS
 ```
 
-## Data Generation
-First, launch the carla server,
-```
-cd CARLA_ROOT
-./CarlaUE4.sh --world-port=2000 -opengl
-```
-Set the carla path, routes file, scenario file, and data path for data generation in ``leaderboard/scripts/data_collection.sh``.
-
-Start data collection
-
-```
-sh leaderboard/scripts/data_collection.sh
-```
-After the data collecting process, run `tools/filter_data.py` and `tools/gen_data.py` to filter out invalid data and pack the data for training.
-
-## Evaluation
-First, launch the carla server,
-```
-cd CARLA_ROOT
-./CarlaUE4.sh --world-port=2000 -opengl
-```
-Set the carla path, routes file, scenario file, model ckpt, and data path for evaluation in ``leaderboard/scripts/run_evaluation.sh``.
-
-Start the evaluation
-
-```
-sh leaderboard/scripts/run_evaluation.sh
-```
-
-## Citation
-
-If you find our repo or our paper useful, please use the following citation:
-
-```
-@inproceedings{wu2022trajectoryguided,
- title={Trajectory-guided Control Prediction for End-to-end Autonomous Driving: A Simple yet Strong Baseline}, 
- author={Penghao Wu and Xiaosong Jia and Li Chen and Junchi Yan and Hongyang Li and Yu Qiao},
- booktitle={NeurIPS},
- year={2022},
-}
-```
-
-## License
-All code within this repository is under [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0).
-
-## Acknowledgements
-
-Our code is based on several repositories:
-- [Transfuser](https://github.com/autonomousvision/transfuser)
-- [Roach](https://github.com/zhejz/carla-roach)
-- [CARLA Leaderboard](https://github.com/carla-simulator/leaderboard)
-- [Scenario Runner](https://github.com/carla-simulator/scenario_runner)
 

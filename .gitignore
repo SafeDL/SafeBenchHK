@@ -7,6 +7,11 @@ __pycache__/
 dist/
 build/
 *.egg
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
 
 # Model checkpoints (too large for GitHub)
 *.ckpt
@@ -17,15 +22,27 @@ build/
 *.h5
 
 # Log and experiment data
+*.log
+*.out
+*.err
 log/Central/
 log/ShaTin/
 log/new_Central/
 log/new_ShaTin/
+log/new_central/
+log/new_shatin/
 log/template/
 Bench2DriveZOO/
 tools/map_waypoints/
 tools/scenario_data/
 tools/scenario_origin/
+output/
+outputs/
+runs/
+wandb/
+safebench/agent/model_ckpt/
+TCP/roach/log/
+TCP/roach/obs_manager/birdview/maps/
 
 # IDE
 .idea/
@@ -40,3 +57,7 @@ Thumbs.db
 
 # CARLA
 *.mp4
+*.avi
+*.mkv
+*.mov
+*.rec
