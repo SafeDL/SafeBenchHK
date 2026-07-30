@@ -298,7 +298,7 @@ def main(config):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--map', type=str, default='1201-ShaTin12D')
+    parser.add_argument('--map', type=str, default='center')
     parser.add_argument('--scenario', type=int, default=8)
     args = parser.parse_args()
     main(args)

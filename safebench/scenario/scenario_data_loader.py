@@ -13,8 +13,9 @@ def calculate_interpolate_trajectory(config, world, grp=None):
     """
     计算插值轨迹。
 
-    trajectory 中的 z 值来自导出的 route XML。对带高架/隧道/坡道的
-    多层地图，保留高度可以避免 get_waypoint() snap 到错误道路层。
+    trajectory 中的 z 值由 RouteParser 从导出的 route XML 还原为路面高度。
+    对带高架/隧道/坡道的多层地图，保留路面高度可以避免 get_waypoint()
+    snap 到错误道路层。
     若此处规划失败，说明该路线在当前地图拓扑中不可达，应在
     tools/create_routes.py 中重新选点并重新导出。
     """

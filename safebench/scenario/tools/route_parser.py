@@ -5,6 +5,7 @@ import carla
 from safebench.scenario.scenario_manager.scenario_config import ScenarioConfig
 TRIGGER_THRESHOLD = 2.0  # Threshold to say if a trigger position is new or repeated, works for matching positions
 TRIGGER_ANGLE_THRESHOLD = 10  # Threshold to say if two angles can be considering matching when matching transforms.
+ROUTE_XML_SPAWN_Z_OFFSET = 2.0
 
 
 class RouteParser(object):
@@ -52,25 +53,33 @@ class RouteParser(object):
 
             waypoint_list = []  # the list of waypoints that can be found on this route
             for waypoint in route.iter('waypoint'):
+                x = float(waypoint.attrib['x'])
+                y = float(waypoint.attrib['y'])
+                xml_z = float(waypoint.attrib['z'])
+                road_z = xml_z - ROUTE_XML_SPAWN_Z_OFFSET
+
                 if len(waypoint_list) == 0:  # 只有将路径的xx.xml文件得到的第一个waypoint的位置和角度信息作为初始位置
                     pitch = float(waypoint.attrib['pitch'])
                     roll = float(waypoint.attrib['roll'])
                     yaw = float(waypoint.attrib['yaw'])
-                    x = float(waypoint.attrib['x'])
-                    y = float(waypoint.attrib['y'])
-                    z = float(waypoint.attrib['z']) + 2.0  # avoid collision to the ground
-                    initial_pose = carla.Transform(carla.Location(x, y, z), carla.Rotation(roll=roll, pitch=pitch, yaw=yaw))
+                    # tools/utilities.py exports route XML z as road_z + 2.0.
+                    # Keep that spawn clearance here; CarlaDataProvider adds
+                    # only a small 0.2m lift when spawning the actor.
+                    initial_pose = carla.Transform(
+                        carla.Location(x, y, xml_z),
+                        carla.Rotation(roll=roll, pitch=pitch, yaw=yaw)
+                    )
                     new_config.initial_transform = initial_pose
                     new_config.initial_pose = initial_pose
-                # Keep the exported route height when localizing waypoints.
-                # On multi-level maps, forcing z=0 can snap the point to a
-                # different road layer and make an otherwise valid route
-                # unreachable in the GRP topology.
+
+                # Use the true road-surface height for route planning. The XML
+                # height includes spawn clearance, which can snap overlapping
+                # junction waypoints to the wrong CARLA road id.
                 waypoint_list.append(
                     carla.Location(
-                        x=float(waypoint.attrib['x']),
-                        y=float(waypoint.attrib['y']),
-                        z=float(waypoint.attrib['z'])
+                        x=x,
+                        y=y,
+                        z=road_z
                     )
                 )
 

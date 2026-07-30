@@ -1,6 +1,7 @@
 import numpy as np
 from safebench.agent.base_policy import BasePolicy
 from safebench.carla_agents.navigation.behavior_agent import BehaviorAgent
+from safebench.carla_agents.navigation.local_planner import RoadOption
 
 
 class CarlaBehaviorAgent(BasePolicy):
@@ -20,14 +21,26 @@ class CarlaBehaviorAgent(BasePolicy):
         behavior_list = ["cautious", "normal", "aggressive"]
         self.behavior = behavior_list[1]
 
+    def _get_route_plan(self, info):
+        route_plan = info.get('route_plan')
+        if route_plan:
+            return route_plan
+
+        route_waypoints = info.get('route_waypoints', [])
+        return [(waypoint, RoadOption.LANEFOLLOW) for waypoint in route_waypoints]
+
     def set_ego_and_route(self, ego_vehicles, info, static_obs=None):
         self.ego_vehicles = ego_vehicles
         self.controller_list = []
         for e_i in range(len(ego_vehicles)):
             controller = BehaviorAgent(self.ego_vehicles[e_i], behavior=self.behavior, target_route_speed=static_obs[e_i]['target_speed'])
-            dest_waypoint = info[e_i]['route_waypoints'][-1]
-            location = dest_waypoint.transform.location
-            controller.set_destination(location) # 为每个控制器设置路线
+            route_plan = self._get_route_plan(info[e_i])
+            if route_plan:
+                controller.set_global_plan(route_plan)
+            else:
+                dest_waypoint = info[e_i]['route_waypoints'][-1]
+                location = dest_waypoint.transform.location
+                controller.set_destination(location) # 为每个控制器设置路线
             self.controller_list.append(controller)
 
     def train(self, replay_buffer):

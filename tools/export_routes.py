@@ -135,7 +135,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--map', type=str, default='center')
     parser.add_argument('--save_dir', type=str, default="scenario_data/center")
-    parser.add_argument('--scenario', type=int, default=1)
+    parser.add_argument('--scenario', type=int, default=2)
 
     args = parser.parse_args()
 

@@ -438,13 +438,13 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         description="检查新路线是否与已知 XML 路线重叠，并删除重叠路线及对应场景文件"
     )
-    parser.add_argument('--map',      type=str, default='1201-ShaTin12D',
+    parser.add_argument('--map',      type=str, default='center',
                         help='CARLA 地图名称（需与 CARLA 服务器一致）')
-    parser.add_argument('--scenario', type=int, default=4,
+    parser.add_argument('--scenario', type=int, default=7,
                         help='场景编号（如 1 对应 scenario_01）')
-    parser.add_argument('--origin_dir', type=str, default='scenario_origin/1201-ShaTin12D',
+    parser.add_argument('--origin_dir', type=str, default='scenario_origin/center',
                         help='新路线 npy 文件的根目录（含 scenario_XX_routes 子目录）')
-    parser.add_argument('--known_dir',  type=str, default='scenario_data/ShaTin',
+    parser.add_argument('--known_dir',  type=str, default='scenario_data/central',
                         help='已知路线 XML 文件的根目录（含 scenario_XX_routes 子目录）；'
                              'central/ShaTin 会自动补查同级 new_central/new_ShaTin')
     parser.add_argument('--port', type=int, default=2000,

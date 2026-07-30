@@ -36,7 +36,7 @@ from pathlib import Path
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
 # 可以指向地图根目录、分类目录或单个 Sxx 目录：
-ROOT_DIR = PROJECT_ROOT / "log" / "new_shatin"
+ROOT_DIR = PROJECT_ROOT / "log" / "new_central_2"
 
 # 示例：
 # ROOT_DIR = PROJECT_ROOT / "log" / "Central"

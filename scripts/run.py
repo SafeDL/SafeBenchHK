@@ -36,7 +36,7 @@ if __name__ == '__main__':
 
     # 单个 episode 的最大仿真步数；超过后 runner 会结束当前场景。
     parser.add_argument('--max_episode_step', type=int, default=2000)
-    # auto_ego 为 True 时通常表示 ego vehicle 由内置逻辑控制，而非外部 agent。
+    # auto_ego 为 True 时通常表示 ego vehicle 由内置逻辑控制，而非外部 agent
     parser.add_argument('--auto_ego', type=bool, default=False)
 
     # 提供三种模式选择：训练agent、训练scenario、evaluation
@@ -48,7 +48,7 @@ if __name__ == '__main__':
     parser.add_argument('--continue_agent_training', '-cat', type=bool, default=False)
     parser.add_argument('--continue_scenario_training', '-cst', type=bool, default=False)
 
-    # 随机种子、PyTorch 线程数和运行设备，用于控制复现实验与计算资源。
+    # 随机种子、PyTorch 线程数和运行设备，用于控制复现实验与计算资源
     parser.add_argument('--seed', '-s', type=int, default=0)
     parser.add_argument('--threads', type=int, default=8)
     parser.add_argument('--device', type=str, default='cuda:0' if torch.cuda.is_available() else 'cpu')   

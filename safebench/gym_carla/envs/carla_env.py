@@ -61,6 +61,7 @@ class CarlaEnv(gym.Env):
         self.display = display
         self.logger = logger
         self.birdeye_render = birdeye_render
+        self.route_plan = []
 
         # Record the time of total steps and resetting steps
         self.reset_step = 0
@@ -189,6 +190,7 @@ class CarlaEnv(gym.Env):
         start_location = config.trajectory[0]
         end_location = config.trajectory[-1]
         route = self._grp.trace_route(start_location, end_location)
+        self.route_plan = route
         # 遍历route中的每个transform_tuple,提取waypoint构成waypoint_list
         waypoints_list = []
         for transform_tuple in route:
@@ -379,6 +381,7 @@ class CarlaEnv(gym.Env):
         info = {
             'waypoints': self.waypoints,
             'route_waypoints': self.route_waypoints,
+            'route_plan': self.route_plan,
             'vehicle_front': self.vehicle_front,
             'cost': self._get_cost()
         }

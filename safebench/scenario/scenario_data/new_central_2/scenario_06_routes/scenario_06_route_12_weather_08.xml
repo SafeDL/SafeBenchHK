@@ -1,0 +1,15 @@
+<?xml version='1.0' encoding='utf-8'?>
+<routes>
+  <route id="12" town="center">
+    <weather cloudiness="100.0" dust_storm="0.0" fog_density="100.0" fog_distance="0.75" fog_falloff="0.10000000149011612" mie_scattering_scale="0.029999999329447746" precipitation="100.0" precipitation_deposits="90.0" rayleigh_scattering_scale="0.03310000151395798" scattering_intensity="1.0" sun_altitude_angle="-90.0" sun_azimuth_angle="-1.0" wetness="100.0" wind_intensity="100.0" />
+    <waypoint pitch="0.00" roll="0.00" x="388.70" y="197.89" yaw="81.34" z="7.00" />
+    <waypoint pitch="0.00" roll="0.00" x="390.43" y="205.42" yaw="72.66" z="7.00" />
+    <waypoint pitch="0.00" roll="0.00" x="393.29" y="212.61" yaw="63.99" z="7.00" />
+    <waypoint pitch="0.00" roll="0.00" x="401.76" y="225.46" yaw="-306.67" z="7.00" />
+    <waypoint pitch="0.00" roll="0.00" x="406.34" y="232.62" yaw="-345.10" z="7.00" />
+    <waypoint pitch="0.00" roll="0.00" x="413.79" y="234.06" yaw="7.98" z="7.00" />
+    <waypoint pitch="0.00" roll="0.00" x="421.71" y="235.17" yaw="7.98" z="7.00" />
+    <waypoint pitch="0.00" roll="0.00" x="429.63" y="236.28" yaw="7.98" z="7.00" />
+    <waypoint pitch="0.00" roll="0.00" x="437.55" y="237.39" yaw="7.98" z="7.00" />
+  </route>
+</routes>

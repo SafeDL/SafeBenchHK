@@ -75,7 +75,7 @@ class RouteReplayBuffer:
 
             # store additional information in given dict (e.g., cost and actor_info)
             for key in additional_dict[s_i].keys():
-                if key == 'data_id':  # 原先是scenario_id
+                if key in ('data_id', 'route_plan'):  # 原先是scenario_id
                     continue
                 if key not in self.buffer_additional_dict[sid].keys():
                     self.buffer_additional_dict[sid][key] = []
@@ -171,7 +171,7 @@ class RouteReplayBuffer:
         # add additional information to the batch
         batch_info = {} 
         for k_i in prepared_infos.keys():
-            if k_i == 'route_waypoints':
+            if k_i in ('route_waypoints', 'route_plan'):
                 continue
             batch_info[k_i] = np.stack(prepared_infos[k_i])[sample_index-1]
             batch_info['n_' + k_i] = np.stack(prepared_infos[k_i])[sample_index]
